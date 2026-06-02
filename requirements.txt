@@ -1,0 +1,16 @@
+# Dependensi RUNTIME produksi / Vercel (sengaja dijaga ramping).
+# yfinance + pytest TIDAK ada di sini — lihat requirements-dev.txt untuk dev lokal.
+# Alasan: yfinance menarik pandas/numpy/lxml (>200MB) yang melebihi batas
+# ukuran serverless Vercel dan memperlambat cold start. Fitur market tetap
+# jalan via fallback HTTP gratis (requests). Lihat app/services/market_service.py.
+
+Flask==3.1.1
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.1.0
+Flask-Login==0.6.3
+python-dotenv==1.1.0
+requests==2.32.3
+
+# Driver PostgreSQL untuk produksi (Neon / Vercel Postgres / Supabase).
+# Wajib karena SQLite tidak persisten di filesystem read-only Vercel.
+psycopg2-binary==2.9.10

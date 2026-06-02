@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Dompet{% endblock %}
+{% block page_title %}Dompet{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Dompet</h2>
+    <p class="page-subtitle">Kelola rekening, dompet digital, dan uang tunai</p>
+  </div>
+  <button class="btn btn-primary" onclick="bukaModalTambah()">
+    <span class="material-symbols-outlined">add</span>
+    Tambah Dompet
+  </button>
+</div>
+
+<!-- ===== Kartu Total Saldo ===== -->
+<div class="stat-card mb-4">
+  <div class="stat-card-label">
+    <span class="material-symbols-outlined">account_balance_wallet</span>
+    Total Saldo Semua Dompet
+  </div>
+  <div class="stat-card-value" id="total-saldo">—</div>
+  <div class="stat-card-change" id="total-saldo-info">Memuat...</div>
+</div>
+
+<!-- Pesan error -->
+<div id="pesan-wallet"></div>
+
+<!-- ===== Grid Kartu Dompet ===== -->
+<div class="grid-3" id="grid-wallet">
+  <div class="text-muted text-sm">Memuat dompet...</div>
+</div>
+
+<!-- ===== Modal Tambah / Edit Dompet ===== -->
+<div class="modal-overlay" id="modal-tambah-wallet">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-wallet-judul">Tambah Dompet</h3>
+      <button class="modal-close" onclick="closeModal('modal-tambah-wallet')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="error-modal-wallet" style="display:none;" class="alert alert-danger mb-3"></div>
+
+      <form id="form-wallet">
+        <input type="hidden" id="wl-id" value="">
+
+        <div class="form-group">
+          <label class="form-label" for="wl-nama">Nama Dompet</label>
+          <input class="form-control" type="text" id="wl-nama" name="name"
+                 placeholder="Misal: BCA Utama, GoPay..." required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="wl-tipe">Tipe Dompet</label>
+            <select class="form-control" id="wl-tipe" name="wallet_type" required>
+              <option value="">Pilih tipe</option>
+              <option value="bank">Rekening Bank</option>
+              <option value="ewallet">Dompet Digital</option>
+              <option value="cash">Uang Tunai</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="wl-saldo">Saldo Awal (Rp)</label>
+            <input class="form-control" type="number" id="wl-saldo" name="initial_balance"
+                   placeholder="0" min="0" required>
+          </div>
+        </div>
+
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-tambah-wallet')">Batal</button>
+      <button class="btn btn-primary" id="btn-simpan-wallet" onclick="simpanWallet()">
+        <span class="material-symbols-outlined">save</span>
+        Simpan
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+/**
+ * Peta tipe wallet ke label Indonesia dan ikon.
+ */
+const TIPE_WALLET = {
+  bank: { label: 'Rekening Bank', ikon: 'account_balance', kelas: 'icon-accent' },
+  ewallet: { label: 'Dompet Digital', ikon: 'smartphone', kelas: 'icon-pos' },
+  cash: { label: 'Uang Tunai', ikon: 'payments', kelas: 'icon-neutral' },
+};
+
+/**
+ * Muat semua dompet dari API dan render kartu.
+ */
+async function muatWallet() {
+  const pesanEl = document.getElementById('pesan-wallet');
+  const grid = document.getElementById('grid-wallet');
+  pesanEl.innerHTML = '';
+  grid.innerHTML = '<div class="text-muted text-sm">Memuat...</div>';
+
+  try {
+    const wallets = await apiGet('/api/wallets');
+
+    // Hitung total saldo
+    const totalSaldo = wallets.reduce((s, w) => s + (w.saldo || 0), 0);
+    document.getElementById('total-saldo').textContent = formatRupiah(totalSaldo);
+    document.getElementById('total-saldo-info').textContent =
+      `dari ${wallets.length} dompet aktif`;
+
+    if (!wallets || wallets.length === 0) {
+      grid.innerHTML = '<div class="text-muted text-sm">Belum ada dompet. Klik "Tambah Dompet" untuk mulai.</div>';
+      return;
+    }
+
+    grid.innerHTML = wallets.map(w => renderKartuWallet(w)).join('');
+
+  } catch (err) {
+    grid.innerHTML = '';
+    pesanEl.innerHTML = `
+      <div class="alert alert-danger" style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+        <span class="material-symbols-outlined">error</span>
+        <span>${err.message}</span>
+      </div>`;
+  }
+}
+
+/**
+ * Render kartu satu dompet.
+ * @param {object} w - data wallet dari API
+ * @returns {string} HTML string
+ */
+function renderKartuWallet(w) {
+  const info = TIPE_WALLET[w.type] || TIPE_WALLET['cash'];
+  return `
+    <div class="card">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:1rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <div class="list-item-icon ${info.kelas}" style="width:48px; height:48px;">
+            <span class="material-symbols-outlined">${info.ikon}</span>
+          </div>
+          <div>
+            <div class="fw-bold">${escHtml(w.name)}</div>
+            <div class="text-xs text-muted">${info.label}</div>
+          </div>
+        </div>
+        <div class="list-item-actions">
+          <button class="btn-icon" onclick="editWallet(${w.id})" title="Edit">
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+          <button class="btn-icon" onclick="hapusWallet(${w.id})" title="Hapus" style="color:var(--neg);">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </div>
+      <div class="stat-card-value" style="font-size:1.375rem; margin-bottom:0.25rem;">
+        ${formatRupiah(w.saldo)}
+      </div>
+      <div class="text-xs text-muted">Saldo saat ini (termasuk semua transaksi)</div>
+      <div class="divider"></div>
+      <div style="display:flex; justify-content:space-between; font-size:0.8125rem;">
+        <span class="text-muted">Saldo awal</span>
+        <span class="fw-semibold">${formatRupiah(w.initial_balance)}</span>
+      </div>
+    </div>`;
+}
+
+/**
+ * Buka modal dalam mode tambah.
+ */
+function bukaModalTambah() {
+  document.getElementById('modal-wallet-judul').textContent = 'Tambah Dompet';
+  document.getElementById('wl-id').value = '';
+  document.getElementById('form-wallet').reset();
+  document.getElementById('error-modal-wallet').style.display = 'none';
+  openModal('modal-tambah-wallet');
+}
+
+/**
+ * Buka modal edit — isi form dengan data wallet.
+ * @param {number} id
+ */
+async function editWallet(id) {
+  try {
+    const wallets = await apiGet('/api/wallets');
+    const w = wallets.find(x => x.id === id);
+    if (!w) { alert('Dompet tidak ditemukan.'); return; }
+
+    document.getElementById('modal-wallet-judul').textContent = 'Edit Dompet';
+    document.getElementById('wl-id').value = w.id;
+    document.getElementById('wl-nama').value = w.name;
+    document.getElementById('wl-tipe').value = w.type;
+    document.getElementById('wl-saldo').value = w.initial_balance;
+    document.getElementById('error-modal-wallet').style.display = 'none';
+    openModal('modal-tambah-wallet');
+
+  } catch (err) {
+    alert('Gagal memuat data: ' + err.message);
+  }
+}
+
+/**
+ * Hapus dompet setelah konfirmasi.
+ */
+async function hapusWallet(id) {
+  if (!confirm('Hapus dompet ini? Dompet hanya bisa dihapus jika tidak memiliki transaksi.')) return;
+  try {
+    await apiDelete(`/api/wallets/${id}`);
+    await muatWallet();
+  } catch (err) {
+    alert('Gagal menghapus: ' + err.message);
+  }
+}
+
+/**
+ * Simpan dompet (create atau update).
+ */
+async function simpanWallet() {
+  const errEl = document.getElementById('error-modal-wallet');
+  errEl.style.display = 'none';
+
+  const id = document.getElementById('wl-id').value;
+  const nama = document.getElementById('wl-nama').value.trim();
+  const tipe = document.getElementById('wl-tipe').value;
+  const saldoAwal = parseInt(document.getElementById('wl-saldo').value, 10) || 0;
+
+  if (!nama) {
+    errEl.textContent = 'Nama dompet wajib diisi.';
+    errEl.style.display = '';
+    return;
+  }
+  if (!tipe) {
+    errEl.textContent = 'Pilih tipe dompet.';
+    errEl.style.display = '';
+    return;
+  }
+
+  const payload = { name: nama, type: tipe, initial_balance: saldoAwal };
+  const btn = document.getElementById('btn-simpan-wallet');
+  btn.disabled = true;
+
+  try {
+    if (id) {
+      await apiPut(`/api/wallets/${id}`, payload);
+    } else {
+      await apiPost('/api/wallets', payload);
+    }
+    closeModal('modal-tambah-wallet');
+    await muatWallet();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', muatWallet);
+</script>
+{% endblock %}

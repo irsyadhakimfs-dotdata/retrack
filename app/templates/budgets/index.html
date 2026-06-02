@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+
+{% block title %}Anggaran{% endblock %}
+{% block page_title %}Anggaran{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Anggaran</h2>
+    <p class="page-subtitle">Tetapkan dan pantau batas pengeluaran per kategori</p>
+  </div>
+  <button class="btn btn-primary" onclick="bukaModalTambah()">
+    <span class="material-symbols-outlined">add</span>
+    Tambah Anggaran
+  </button>
+</div>
+
+<!-- ===== Ringkasan Anggaran ===== -->
+<div class="grid-3 mb-4">
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">account_balance</span>
+      Total Anggaran
+    </div>
+    <div class="stat-card-value" id="stat-total-budget">—</div>
+    <div class="stat-card-change" id="stat-bulan-budget">Memuat...</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">payments</span>
+      Terpakai
+    </div>
+    <div class="stat-card-value negative" id="stat-terpakai-budget">—</div>
+    <div class="stat-card-change" id="stat-terpakai-pct">—</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">savings</span>
+      Sisa Anggaran
+    </div>
+    <div class="stat-card-value positive" id="stat-sisa-budget">—</div>
+    <div class="stat-card-change" id="stat-sisa-pct">—</div>
+  </div>
+</div>
+
+<!-- Pesan error -->
+<div id="pesan-budget"></div>
+
+<!-- ===== Daftar Budget ===== -->
+<div class="card">
+  <div class="card-header">
+    <div>
+      <div class="card-title" id="judul-budget">Detail Anggaran</div>
+      <div class="card-subtitle">Persentase penggunaan per kategori</div>
+    </div>
+    <!-- Filter bulan -->
+    <select class="form-control" id="filter-bulan-budget" style="width: auto; min-width: 140px;">
+    </select>
+  </div>
+
+  <div id="container-budget-list" style="display: flex; flex-direction: column; gap: 1.5rem;">
+    <div class="text-muted text-sm">Memuat anggaran...</div>
+  </div>
+</div>
+
+<!-- ===== Modal Tambah / Edit Budget ===== -->
+<div class="modal-overlay" id="modal-tambah-budget">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-budget-judul">Tambah Anggaran</h3>
+      <button class="modal-close" onclick="closeModal('modal-tambah-budget')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="error-modal-budget" style="display:none;" class="alert alert-danger mb-3"></div>
+
+      <form id="form-budget">
+        <input type="hidden" id="bg-id" value="">
+
+        <div class="form-group">
+          <label class="form-label" for="bg-kategori">Kategori Pengeluaran</label>
+          <select class="form-control" id="bg-kategori" name="category_id" required>
+            <option value="">Pilih kategori</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="bg-limit">Batas Anggaran (Rp)</label>
+            <input class="form-control" type="number" id="bg-limit" name="limit_amount"
+                   placeholder="0" min="1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="bg-periode">Periode</label>
+            <input class="form-control" type="month" id="bg-periode" name="period">
+          </div>
+        </div>
+
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-tambah-budget')">Batal</button>
+      <button class="btn btn-primary" id="btn-simpan-budget" onclick="simpanBudget()">
+        <span class="material-symbols-outlined">save</span>
+        Simpan
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const NAMA_BULAN = [
+  '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+let kategoriPengeluaran = [];
+
+/**
+ * Inisialisasi halaman budget: isi filter, muat kategori & budget.
+ */
+async function inisialisasiHalaman() {
+  const now = new Date();
+  const bulanIni = now.getMonth() + 1;
+  const tahunIni = now.getFullYear();
+
+  // Isi filter bulan
+  const sel = document.getElementById('filter-bulan-budget');
+  for (let i = 0; i < 12; i++) {
+    let b = bulanIni - i;
+    let t = tahunIni;
+    if (b <= 0) { b += 12; t -= 1; }
+    const opt = document.createElement('option');
+    opt.value = `${t}-${String(b).padStart(2, '0')}`;
+    opt.textContent = `${NAMA_BULAN[b]} ${t}`;
+    if (i === 0) opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  // Set periode default di form
+  document.getElementById('bg-periode').value = `${tahunIni}-${String(bulanIni).padStart(2, '0')}`;
+
+  // Muat kategori untuk dropdown
+  await muatKategoriPengeluaran();
+
+  // Muat budget bulan ini
+  await muatBudget();
+
+  // Listen perubahan filter
+  sel.addEventListener('change', muatBudget);
+}
+
+/**
+ * Muat kategori pengeluaran untuk dropdown form.
+ */
+async function muatKategoriPengeluaran() {
+  try {
+    kategoriPengeluaran = await apiGet('/api/categories?kind=expense');
+    const sel = document.getElementById('bg-kategori');
+    sel.innerHTML = '<option value="">Pilih kategori</option>';
+    kategoriPengeluaran.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.name;
+      sel.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('Gagal memuat kategori:', err.message);
+  }
+}
+
+/**
+ * Muat daftar budget sesuai periode yang dipilih.
+ */
+async function muatBudget() {
+  const pesanEl = document.getElementById('pesan-budget');
+  const container = document.getElementById('container-budget-list');
+  pesanEl.innerHTML = '';
+
+  // Ambil nilai filter bulan
+  const filterVal = document.getElementById('filter-bulan-budget').value;
+  let bulan, tahun;
+  if (filterVal) {
+    [tahun, bulan] = filterVal.split('-').map(Number);
+  } else {
+    const now = new Date();
+    bulan = now.getMonth() + 1;
+    tahun = now.getFullYear();
+  }
+
+  // Perbarui judul
+  document.getElementById('judul-budget').textContent =
+    `Detail Anggaran — ${NAMA_BULAN[bulan]} ${tahun}`;
+
+  container.innerHTML = '<div class="text-muted text-sm">Memuat...</div>';
+
+  try {
+    const budgets = await apiGet(`/api/budgets?month=${bulan}&year=${tahun}`);
+
+    // Hitung ringkasan
+    const totalLimit = budgets.reduce((s, b) => s + b.limit_amount, 0);
+    const totalTerpakai = budgets.reduce((s, b) => s + (b.terpakai || 0), 0);
+    const totalSisa = totalLimit - totalTerpakai;
+    const pctTerpakai = totalLimit > 0 ? (totalTerpakai / totalLimit * 100).toFixed(1) : 0;
+    const pctSisa = totalLimit > 0 ? (totalSisa / totalLimit * 100).toFixed(1) : 0;
+
+    document.getElementById('stat-total-budget').textContent = formatRupiah(totalLimit);
+    document.getElementById('stat-bulan-budget').textContent = `${NAMA_BULAN[bulan]} ${tahun}`;
+    document.getElementById('stat-terpakai-budget').textContent = formatRupiah(totalTerpakai);
+    document.getElementById('stat-terpakai-pct').textContent = `${pctTerpakai}% dari total`;
+    document.getElementById('stat-sisa-budget').textContent = formatRupiah(totalSisa);
+    document.getElementById('stat-sisa-pct').textContent = `${pctSisa}% tersisa`;
+
+    if (!budgets || budgets.length === 0) {
+      container.innerHTML = '<div class="text-muted text-sm">Belum ada anggaran untuk periode ini. Klik "Tambah Anggaran" untuk memulai.</div>';
+      return;
+    }
+
+    container.innerHTML = budgets.map((b, idx) => {
+      const persen = b.persen_terpakai || 0;
+      const kelas = persen >= 100 ? 'over' : persen >= 80 ? 'warn' : 'safe';
+      const widthPct = Math.min(persen, 100).toFixed(1);
+
+      let statusHtml;
+      if (persen >= 100) {
+        statusHtml = '<span class="text-neg fw-semibold">Melebihi batas!</span>';
+      } else if (persen >= 80) {
+        statusHtml = '<span style="color:var(--warning); font-weight:600; display:inline-flex; align-items:center; gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:1rem;">warning</span> Hampir habis!</span>';
+      } else {
+        statusHtml = '<span class="text-pos fw-semibold">Aman</span>';
+      }
+
+      const ikonEl = b.icon_kategori || 'receipt_long';
+      const divider = idx < budgets.length - 1 ? '<div class="divider" style="margin:0;"></div>' : '';
+
+      return `
+        <div class="budget-item">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.625rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <div class="list-item-icon icon-neg" style="width:36px; height:36px;">
+                <span class="material-symbols-outlined" style="font-size:1.125rem;">${escHtml(ikonEl)}</span>
+              </div>
+              <div>
+                <div class="fw-semibold">${escHtml(b.nama_kategori || '—')}</div>
+                <div class="text-xs text-muted">${b.terpakai ? b.terpakai.toLocaleString('id-ID') : 0} terpakai</div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div class="fw-bold ${persen >= 100 ? 'text-neg' : ''}">${formatRupiah(b.terpakai || 0)}</div>
+              <div class="text-xs text-muted">dari ${formatRupiah(b.limit_amount)}</div>
+            </div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar ${kelas}" style="width:${widthPct}%;"></div>
+          </div>
+          <div class="progress-label">
+            <span>${persen.toFixed(0)}% terpakai</span>
+            ${statusHtml}
+          </div>
+          <div class="list-item-actions" style="justify-content:flex-end; margin-top:0.5rem;">
+            <button class="btn-icon" onclick="editBudget(${b.id})" title="Edit">
+              <span class="material-symbols-outlined">edit</span>
+            </button>
+            <button class="btn-icon" onclick="hapusBudget(${b.id})" title="Hapus" style="color:var(--neg);">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        </div>
+        ${divider}`;
+    }).join('');
+
+  } catch (err) {
+    container.innerHTML = '';
+    pesanEl.innerHTML = `
+      <div class="alert alert-danger" style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+        <span class="material-symbols-outlined">error</span>
+        <span>${err.message}</span>
+      </div>`;
+  }
+}
+
+/**
+ * Buka modal dalam mode tambah.
+ */
+function bukaModalTambah() {
+  document.getElementById('modal-budget-judul').textContent = 'Tambah Anggaran';
+  document.getElementById('bg-id').value = '';
+  document.getElementById('form-budget').reset();
+  document.getElementById('error-modal-budget').style.display = 'none';
+
+  // Set periode ke bulan yang sedang ditampilkan
+  const filterVal = document.getElementById('filter-bulan-budget').value;
+  if (filterVal) {
+    document.getElementById('bg-periode').value = filterVal;
+  }
+
+  openModal('modal-tambah-budget');
+}
+
+/**
+ * Edit budget — isi form dengan data yang ada.
+ * @param {number} id
+ */
+async function editBudget(id) {
+  try {
+    const filterVal = document.getElementById('filter-bulan-budget').value;
+    let bulan, tahun;
+    if (filterVal) {
+      [tahun, bulan] = filterVal.split('-').map(Number);
+    } else {
+      const now = new Date();
+      bulan = now.getMonth() + 1; tahun = now.getFullYear();
+    }
+
+    const budgets = await apiGet(`/api/budgets?month=${bulan}&year=${tahun}`);
+    const b = budgets.find(x => x.id === id);
+    if (!b) { alert('Data tidak ditemukan.'); return; }
+
+    document.getElementById('modal-budget-judul').textContent = 'Edit Anggaran';
+    document.getElementById('bg-id').value = b.id;
+    document.getElementById('bg-kategori').value = b.category_id;
+    document.getElementById('bg-limit').value = b.limit_amount;
+    document.getElementById('bg-periode').value =
+      `${b.year}-${String(b.month).padStart(2, '0')}`;
+    document.getElementById('error-modal-budget').style.display = 'none';
+    openModal('modal-tambah-budget');
+
+  } catch (err) {
+    alert('Gagal memuat data: ' + err.message);
+  }
+}
+
+/**
+ * Hapus budget setelah konfirmasi.
+ */
+async function hapusBudget(id) {
+  if (!confirm('Hapus anggaran ini?')) return;
+  try {
+    await apiDelete(`/api/budgets/${id}`);
+    await muatBudget();
+  } catch (err) {
+    alert('Gagal menghapus: ' + err.message);
+  }
+}
+
+/**
+ * Simpan budget (create atau update).
+ */
+async function simpanBudget() {
+  const errEl = document.getElementById('error-modal-budget');
+  errEl.style.display = 'none';
+
+  const id = document.getElementById('bg-id').value;
+  const categoryId = parseInt(document.getElementById('bg-kategori').value, 10);
+  const limitAmount = parseInt(document.getElementById('bg-limit').value, 10);
+  const periode = document.getElementById('bg-periode').value;
+
+  if (!categoryId) {
+    errEl.textContent = 'Pilih kategori terlebih dahulu.';
+    errEl.style.display = '';
+    return;
+  }
+  if (!limitAmount || limitAmount <= 0) {
+    errEl.textContent = 'Batas anggaran harus lebih dari 0.';
+    errEl.style.display = '';
+    return;
+  }
+  if (!periode) {
+    errEl.textContent = 'Periode wajib diisi.';
+    errEl.style.display = '';
+    return;
+  }
+
+  const [tahun, bulan] = periode.split('-').map(Number);
+  const payload = {
+    category_id: categoryId,
+    limit_amount: limitAmount,
+    month: bulan,
+    year: tahun,
+  };
+
+  const btn = document.getElementById('btn-simpan-budget');
+  btn.disabled = true;
+
+  try {
+    if (id) {
+      // Update hanya limit_amount (tidak bisa ganti kategori/periode)
+      await apiPut(`/api/budgets/${id}`, { limit_amount: limitAmount });
+    } else {
+      await apiPost('/api/budgets', payload);
+    }
+    closeModal('modal-tambah-budget');
+    await muatBudget();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', inisialisasiHalaman);
+</script>
+{% endblock %}

@@ -1,0 +1,584 @@
+{% extends "base.html" %}
+
+{% block title %}Transaksi{% endblock %}
+{% block page_title %}Transaksi{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Transaksi</h2>
+    <p class="page-subtitle">Riwayat semua pemasukan dan pengeluaran</p>
+  </div>
+  <button class="btn btn-primary" onclick="bukaModalTambah()">
+    <span class="material-symbols-outlined">add</span>
+    Tambah Transaksi
+  </button>
+</div>
+
+<!-- ===== Filter & Pencarian ===== -->
+<div class="card mb-4">
+  <div class="filter-bar">
+    <!-- Search -->
+    <div class="search-wrap">
+      <span class="material-symbols-outlined">search</span>
+      <input class="form-control" type="text" id="search-transaksi" placeholder="Cari catatan transaksi...">
+    </div>
+
+    <!-- Filter Bulan -->
+    <select class="form-control" id="filter-bulan" style="width: auto; min-width: 140px;">
+      <option value="">Semua Bulan</option>
+    </select>
+
+    <!-- Filter Kategori -->
+    <select class="form-control" id="filter-kategori" style="width: auto; min-width: 160px;">
+      <option value="">Semua Kategori</option>
+    </select>
+
+    <!-- Filter Tipe -->
+    <select class="form-control" id="filter-tipe" style="width: auto; min-width: 140px;">
+      <option value="">Semua Tipe</option>
+      <option value="income">Pemasukan</option>
+      <option value="expense">Pengeluaran</option>
+    </select>
+
+    <button class="btn btn-outline btn-sm" onclick="terapkanFilter()">
+      <span class="material-symbols-outlined">filter_list</span>
+      Filter
+    </button>
+  </div>
+</div>
+
+<!-- ===== Pesan Error / Loading ===== -->
+<div id="pesan-transaksi"></div>
+
+<!-- ===== Tabel Transaksi ===== -->
+<div class="card">
+  <div class="table-wrap">
+    <table id="tabel-transaksi">
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th>Deskripsi</th>
+          <th>Kategori</th>
+          <th>Dompet</th>
+          <th style="text-align: right;">Jumlah</th>
+          <th>Erosi Nilai</th>
+          <th style="text-align: center;">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-transaksi">
+        <tr><td colspan="7" class="text-muted text-sm">Memuat transaksi...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Modal Tambah / Edit Transaksi ===== -->
+<div class="modal-overlay" id="modal-tambah-transaksi">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-transaksi-judul">Tambah Transaksi</h3>
+      <button class="modal-close" onclick="closeModal('modal-tambah-transaksi')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- Pesan error di dalam modal -->
+      <div id="error-modal-transaksi" style="display:none;" class="alert alert-danger mb-3"></div>
+
+      <form id="form-transaksi">
+        <input type="hidden" id="tr-id" value="">
+
+        <div class="form-group">
+          <label class="form-label">Tipe Transaksi</label>
+          <div style="display: flex; gap: 0.75rem;">
+            <label style="display: flex; align-items: center; gap: 0.375rem; cursor: pointer;">
+              <input type="radio" name="tipe" value="expense" id="tipe-expense" checked> Pengeluaran
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.375rem; cursor: pointer;">
+              <input type="radio" name="tipe" value="income" id="tipe-income"> Pemasukan
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="tr-jumlah">Jumlah (Rp)</label>
+            <input class="form-control" type="number" id="tr-jumlah" name="amount"
+                   placeholder="0" min="1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tr-tanggal">Tanggal</label>
+            <input class="form-control" type="date" id="tr-tanggal" name="date" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="tr-waktu">Waktu</label>
+          <input class="form-control" type="time" id="tr-waktu" name="time">
+          <small class="text-muted" style="font-size:0.75rem;">Default: jam saat ini. Boleh diubah.</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="tr-deskripsi">Catatan</label>
+          <input class="form-control" type="text" id="tr-deskripsi" name="note"
+                 placeholder="Misal: Makan siang, Bayar listrik..." required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="tr-kategori">Kategori</label>
+            <select class="form-control" id="tr-kategori" name="category_id" required>
+              <option value="">Pilih kategori</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tr-dompet">Dompet</label>
+            <select class="form-control" id="tr-dompet" name="wallet_id" required>
+              <option value="">Pilih dompet</option>
+            </select>
+          </div>
+        </div>
+
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-tambah-transaksi')">Batal</button>
+      <button class="btn btn-primary" id="btn-simpan-transaksi" onclick="simpanTransaksi()">
+        <span class="material-symbols-outlined">save</span>
+        Simpan
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ===== State halaman transaksi =====
+let semuaKategori = [];
+let semuaWallet = [];
+const NAMA_BULAN = [
+  '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+
+/**
+ * Inisialisasi halaman: isi filter dropdown, muat data awal.
+ */
+async function inisialisasiHalaman() {
+  const now = new Date();
+  const bulanIni = now.getMonth() + 1;
+  const tahunIni = now.getFullYear();
+
+  // Isi filter bulan (12 bulan terakhir)
+  const selBulan = document.getElementById('filter-bulan');
+  for (let i = 0; i < 12; i++) {
+    let b = bulanIni - i;
+    let t = tahunIni;
+    if (b <= 0) { b += 12; t -= 1; }
+    const opt = document.createElement('option');
+    opt.value = `${t}-${String(b).padStart(2, '0')}`;
+    opt.textContent = `${NAMA_BULAN[b]} ${t}`;
+    if (i === 0) opt.selected = true;
+    selBulan.appendChild(opt);
+  }
+
+  // Set tanggal & waktu (jam saat ini) di form
+  document.getElementById('tr-tanggal').value = now.toISOString().split('T')[0];
+  document.getElementById('tr-waktu').value = jamSekarang();
+
+  // Muat kategori dan wallet untuk dropdown
+  await Promise.all([muatKategori(), muatWallet()]);
+
+  // Muat transaksi bulan ini
+  await muatTransaksi();
+}
+
+/**
+ * Muat semua kategori dari API dan isi dropdown.
+ */
+async function muatKategori() {
+  try {
+    semuaKategori = await apiGet('/api/categories');
+
+    // Isi dropdown filter
+    const selFilter = document.getElementById('filter-kategori');
+    semuaKategori.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.name;
+      selFilter.appendChild(opt);
+    });
+
+    // Isi dropdown form tambah
+    isiDropdownKategoriForm();
+
+  } catch (err) {
+    console.error('Gagal memuat kategori:', err.message);
+  }
+}
+
+/**
+ * Isi dropdown kategori pada form sesuai tipe yang dipilih.
+ */
+function isiDropdownKategoriForm() {
+  const tipe = document.querySelector('input[name="tipe"]:checked')?.value || 'expense';
+  const sel = document.getElementById('tr-kategori');
+  const nilaiLama = sel.value;
+
+  sel.innerHTML = '<option value="">Pilih kategori</option>';
+  semuaKategori
+    .filter(c => c.kind === tipe)
+    .forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.name;
+      sel.appendChild(opt);
+    });
+
+  // Pulihkan nilai yang dipilih sebelumnya jika masih relevan
+  if (nilaiLama) sel.value = nilaiLama;
+}
+
+/**
+ * Muat semua wallet dari API dan isi dropdown.
+ */
+async function muatWallet() {
+  try {
+    semuaWallet = await apiGet('/api/wallets');
+    const sel = document.getElementById('tr-dompet');
+    sel.innerHTML = '<option value="">Pilih dompet</option>';
+    semuaWallet.forEach(w => {
+      const opt = document.createElement('option');
+      opt.value = w.id;
+      opt.textContent = `${w.name} (${formatRupiah(w.saldo)})`;
+      sel.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('Gagal memuat wallet:', err.message);
+  }
+}
+
+/**
+ * Muat transaksi dari API sesuai filter aktif.
+ */
+async function muatTransaksi() {
+  const tbody = document.getElementById('tbody-transaksi');
+  const pesanEl = document.getElementById('pesan-transaksi');
+
+  // Tampilkan loading
+  tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-sm">Memuat...</td></tr>';
+  pesanEl.innerHTML = '';
+
+  // Kumpulkan query params
+  const params = new URLSearchParams();
+  const nilaiFilter = document.getElementById('filter-bulan').value;
+  if (nilaiFilter) {
+    const [t, b] = nilaiFilter.split('-');
+    params.set('year', t);
+    params.set('month', parseInt(b, 10));
+  }
+  const katId = document.getElementById('filter-kategori').value;
+  if (katId) params.set('category_id', katId);
+  const q = document.getElementById('search-transaksi').value.trim();
+  if (q) params.set('q', q);
+
+  try {
+    let trxList = await apiGet(`/api/transactions?${params.toString()}`);
+
+    // Filter tipe di sisi klien (API belum punya filter tipe)
+    const filterTipe = document.getElementById('filter-tipe').value;
+    if (filterTipe) {
+      trxList = trxList.filter(t => t.kind === filterTipe);
+    }
+
+    if (!trxList || trxList.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-sm" style="text-align:center; padding:2rem;">Tidak ada transaksi yang sesuai filter.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = trxList.map(trx => renderBarisTransaksi(trx)).join('');
+
+  } catch (err) {
+    tbody.innerHTML = '';
+    pesanEl.innerHTML = `
+      <div class="alert alert-danger" style="display:flex; align-items:center; gap:0.5rem;">
+        <span class="material-symbols-outlined">error</span>
+        <span>${err.message}</span>
+      </div>`;
+  }
+}
+
+/**
+ * Render satu baris transaksi sebagai HTML string.
+ * @param {object} trx - data transaksi dari API
+ * @returns {string}
+ */
+function renderBarisTransaksi(trx) {
+  const isIncome = trx.kind === 'income';
+  const tanda = isIncome ? '+' : '-';
+  const kelasNominal = isIncome ? 'text-pos' : 'text-neg';
+
+  // Format tanggal + waktu (waktu disimpan di kolom date sebagai DateTime)
+  const tgl = new Date(trx.date + 'T00:00:00');
+  const tglStr = tgl.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  const waktuStr = trx.time || '00:00';
+
+  // Nama kategori & wallet
+  const kat = semuaKategori.find(c => c.id === trx.category_id);
+  const namaKat = kat ? kat.name : '—';
+  const wallet = semuaWallet.find(w => w.id === trx.wallet_id);
+  const namaWallet = wallet ? wallet.name : '—';
+  const kelasKat = isIncome ? 'badge-pos' : 'badge-neutral';
+
+  // Badge erosi nilai (hanya untuk income)
+  let badgeErosi = '';
+  if (isIncome) {
+    if (trx.erosi !== null && trx.erosi !== undefined) {
+      // erosi_persen > 0 = daya beli TURUN (rupiah melemah) → merah, panah turun
+      // erosi_persen < 0 = daya beli NAIK (rupiah menguat) → hijau, panah naik
+      const nilaiErosi = parseFloat(trx.erosi.erosi_persen || 0);
+      const pct = Math.abs(nilaiErosi).toFixed(2);
+      const turun = nilaiErosi >= 0;
+      const kursAwal = Math.round(trx.erosi.usd_rate_at_date || 0).toLocaleString('id-ID');
+      const kursSkrg = Math.round(trx.erosi.usd_rate_sekarang || 0).toLocaleString('id-ID');
+      const arah = turun ? 'naik' : 'turun';
+      const tooltip = turun
+        ? `Daya beli tergerus ${pct}% karena kurs USD/IDR ${arah} dari Rp ${kursAwal} → Rp ${kursSkrg}. Diukur terhadap USD, bukan inflasi domestik.`
+        : `Daya beli menguat ${pct}% karena kurs USD/IDR ${arah} dari Rp ${kursAwal} → Rp ${kursSkrg}. Diukur terhadap USD, bukan inflasi domestik.`;
+      const warna = turun ? 'var(--neg)' : 'var(--pos)';
+      const ikon = turun ? 'trending_down' : 'trending_up';
+      const panah = turun ? '↓' : '↑';
+      badgeErosi = `
+        <span class="erosi-badge" title="${escHtml(tooltip)}"
+              style="cursor:help; display:inline-flex; align-items:center; gap:0.25rem; font-size:0.75rem; color:${warna};">
+          <span class="material-symbols-outlined" style="font-size:0.875rem;">${ikon}</span>
+          ${panah}${pct}% vs USD
+        </span>`;
+    } else {
+      badgeErosi = `
+        <span class="erosi-badge erosi-unavailable" title="Data kurs tidak tersedia saat transaksi dibuat."
+              style="cursor:help; display:inline-flex; align-items:center; gap:0.25rem; font-size:0.75rem; color:var(--text-2);">
+          <span class="material-symbols-outlined" style="font-size:0.875rem;">help_outline</span>
+          data kurs tidak tersedia
+        </span>`;
+    }
+  } else {
+    badgeErosi = '<span class="text-muted" style="font-size:0.75rem;">—</span>';
+  }
+
+  return `
+    <tr>
+      <td>
+        <div class="fw-semibold">${tglStr}</div>
+        <div class="text-muted" style="font-size:0.75rem; display:flex; align-items:center; gap:0.2rem;">
+          <span class="material-symbols-outlined" style="font-size:0.85rem;">schedule</span>${waktuStr}
+        </div>
+      </td>
+      <td>
+        <div class="fw-semibold">${escHtml(trx.note || '—')}</div>
+      </td>
+      <td><span class="badge ${kelasKat}">${escHtml(namaKat)}</span></td>
+      <td>${escHtml(namaWallet)}</td>
+      <td style="text-align:right;" class="${kelasNominal} fw-bold">
+        ${tanda}${formatRupiah(trx.amount)}
+      </td>
+      <td>${badgeErosi}</td>
+      <td style="text-align:center;">
+        <div class="list-item-actions">
+          <button class="btn-icon" onclick="editTransaksi(${trx.id})" title="Edit">
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+          <button class="btn-icon" onclick="hapusTransaksi(${trx.id})" title="Hapus" style="color:var(--neg);">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+}
+
+/**
+ * Buka modal dalam mode tambah (reset form).
+ */
+function bukaModalTambah() {
+  document.getElementById('modal-transaksi-judul').textContent = 'Tambah Transaksi';
+  document.getElementById('tr-id').value = '';
+  document.getElementById('form-transaksi').reset();
+  document.getElementById('error-modal-transaksi').style.display = 'none';
+  document.getElementById('tipe-expense').checked = true;
+  document.getElementById('tr-tanggal').value = new Date().toISOString().split('T')[0];
+  document.getElementById('tr-waktu').value = jamSekarang();
+  isiDropdownKategoriForm();
+  openModal('modal-tambah-transaksi');
+}
+
+/**
+ * Buka modal dalam mode edit — isi form dengan data transaksi.
+ * @param {number} id - ID transaksi
+ */
+async function editTransaksi(id) {
+  try {
+    // Cari data dari list yang sudah dimuat (tidak perlu GET by ID)
+    const tbody = document.getElementById('tbody-transaksi');
+    // Buka modal dulu
+    document.getElementById('modal-transaksi-judul').textContent = 'Edit Transaksi';
+    document.getElementById('error-modal-transaksi').style.display = 'none';
+
+    // Ambil data dari API
+    const params = new URLSearchParams();
+    const trxList = await apiGet('/api/transactions');
+    const trx = trxList.find(t => t.id === id);
+    if (!trx) { alert('Data tidak ditemukan.'); return; }
+
+    document.getElementById('tr-id').value = trx.id;
+    document.getElementById('tr-jumlah').value = trx.amount;
+    document.getElementById('tr-tanggal').value = trx.date;
+    document.getElementById('tr-waktu').value = trx.time || '00:00';
+    document.getElementById('tr-deskripsi').value = trx.note || '';
+
+    // Set tipe radio
+    document.getElementById(trx.kind === 'income' ? 'tipe-income' : 'tipe-expense').checked = true;
+    isiDropdownKategoriForm();
+
+    document.getElementById('tr-kategori').value = trx.category_id;
+    document.getElementById('tr-dompet').value = trx.wallet_id;
+
+    openModal('modal-tambah-transaksi');
+  } catch (err) {
+    alert('Gagal memuat data: ' + err.message);
+  }
+}
+
+/**
+ * Hapus transaksi setelah konfirmasi.
+ * @param {number} id
+ */
+async function hapusTransaksi(id) {
+  if (!confirm('Hapus transaksi ini? Tindakan tidak bisa dibatalkan.')) return;
+
+  try {
+    await apiDelete(`/api/transactions/${id}`);
+    await Promise.all([muatTransaksi(), muatWallet()]);
+  } catch (err) {
+    alert('Gagal menghapus: ' + err.message);
+  }
+}
+
+/**
+ * Simpan transaksi (create atau update).
+ */
+async function simpanTransaksi() {
+  const errEl = document.getElementById('error-modal-transaksi');
+  errEl.style.display = 'none';
+
+  const id = document.getElementById('tr-id').value;
+  const jumlah = parseInt(document.getElementById('tr-jumlah').value, 10);
+  const tanggal = document.getElementById('tr-tanggal').value;
+  const waktu = document.getElementById('tr-waktu').value;  // "HH:MM" atau kosong
+  const catatan = document.getElementById('tr-deskripsi').value.trim();
+  const categoryId = parseInt(document.getElementById('tr-kategori').value, 10);
+  const walletId = parseInt(document.getElementById('tr-dompet').value, 10);
+  const tipe = document.querySelector('input[name="tipe"]:checked')?.value;
+
+  // Validasi sisi klien
+  if (!jumlah || jumlah <= 0) {
+    errEl.textContent = 'Jumlah harus diisi dan lebih dari 0.';
+    errEl.style.display = '';
+    return;
+  }
+  if (!tanggal) {
+    errEl.textContent = 'Tanggal wajib diisi.';
+    errEl.style.display = '';
+    return;
+  }
+  if (!catatan) {
+    errEl.textContent = 'Catatan wajib diisi.';
+    errEl.style.display = '';
+    return;
+  }
+  if (!categoryId) {
+    errEl.textContent = 'Pilih kategori terlebih dahulu.';
+    errEl.style.display = '';
+    return;
+  }
+  if (!walletId) {
+    errEl.textContent = 'Pilih dompet terlebih dahulu.';
+    errEl.style.display = '';
+    return;
+  }
+
+  const payload = {
+    amount: jumlah,
+    date: tanggal,
+    time: waktu || undefined,  // bila kosong, server pakai jam saat ini (create)
+    note: catatan,
+    category_id: categoryId,
+    wallet_id: walletId,
+    kind: tipe,
+  };
+
+  const btn = document.getElementById('btn-simpan-transaksi');
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+
+  try {
+    if (id) {
+      await apiPut(`/api/transactions/${id}`, payload);
+    } else {
+      await apiPost('/api/transactions', payload);
+    }
+    closeModal('modal-tambah-transaksi');
+    await Promise.all([muatTransaksi(), muatWallet()]);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="material-symbols-outlined">save</span> Simpan';
+  }
+}
+
+/**
+ * Terapkan filter dan muat ulang transaksi.
+ */
+function terapkanFilter() {
+  muatTransaksi();
+}
+
+/**
+ * Kembalikan jam saat ini dalam format "HH:MM" untuk input type=time.
+ */
+function jamSekarang() {
+  const n = new Date();
+  return String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
+}
+
+/**
+ * Escape HTML untuk mencegah XSS.
+ */
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
+
+// ===== Event listeners =====
+document.addEventListener('DOMContentLoaded', function () {
+  inisialisasiHalaman();
+
+  // Filter real-time saat ketik di search
+  let searchTimer;
+  document.getElementById('search-transaksi').addEventListener('input', function () {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(terapkanFilter, 500);
+  });
+
+  // Update dropdown kategori saat tipe berubah
+  document.querySelectorAll('input[name="tipe"]').forEach(radio => {
+    radio.addEventListener('change', isiDropdownKategoriForm);
+  });
+});
+</script>
+{% endblock %}

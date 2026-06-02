@@ -1,0 +1,663 @@
+/* ==========================================================
+   ReFinance — custom.css
+   TEMA BARU: Indigo (brand) + Amber (aksen) — gaya fintech modern.
+   Strategi permukaan "campur": sidebar/topbar/modal = glass,
+   kartu konten & tabel = solid (kontras teks lebih baik).
+   Dimuat SETELAH style.css → menimpa variabel & komponen legacy
+   sehingga seluruh halaman langsung mengadopsi desain baru.
+   ========================================================== */
+
+/* ---------------------------------------------------------
+   1. Palet warna (CSS variables) — Indigo + Amber
+   --------------------------------------------------------- */
+:root {
+  /* Brand utama (Indigo) */
+  --primary: #6366F1;
+  --primary-light: #EEF0FE;
+  --primary-dark: #4F46E5;
+  --primary-darker: #4338CA;
+
+  /* Aksen (Amber) */
+  --accent: #F59E0B;
+  --accent-dark: #D97706;
+
+  --bg-white: #FFFFFF;
+
+  /* --- Re-map variabel legacy (style.css) agar tema seragam --- */
+  --bg: #F1F5F9;            /* area inset lembut (input, hover) */
+  --card: #FFFFFF;
+  --text: #0F172A;         /* slate-900 — teks utama, kontras tinggi */
+  --text-2: #64748B;       /* slate-500 — teks sekunder */
+  --btn: #6366F1;          /* tombol primary = indigo */
+  --border: #E2E8F0;       /* garis tipis slate-200 */
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.12);
+
+  /* Status keuangan (semantik) */
+  --pos: #10B981;          /* emerald — pemasukan */
+  --neg: #F43F5E;          /* rose — pengeluaran */
+  --warning: #D97706;
+  --warning-bg: #FEF3C7;
+  --danger: #E11D48;
+  --danger-bg: #FFE4E6;
+  --success-bg: #D1FAE5;
+  --progress-safe: #10B981;
+  --progress-warn: #F59E0B;
+  --progress-over: #F43F5E;
+
+  /* Glass tokens (untuk sidebar/topbar/modal/hero) */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-blur: 18px;
+
+  /* Radius konsisten */
+  --radius-card: 18px;
+
+  /* Font: isi (sans) & judul/angka (display) */
+  --font-sans:    'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Space Grotesk', 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  /* --- Skala palet diperluas (shade konsisten, bukan warna acak) --- */
+  /* Indigo (brand) */
+  --indigo-50:  #EEF0FE;
+  --indigo-100: #E0E2FD;
+  --indigo-300: #A5B0FB;
+  --indigo-500: #6366F1;
+  --indigo-600: #4F46E5;
+  --indigo-700: #4338CA;
+  --indigo-900: #1E1B4B;
+  /* Amber (aksen) */
+  --amber-50:  #FEF3C7;
+  --amber-300: #FCD34D;
+  --amber-500: #F59E0B;
+  --amber-700: #B45309;
+  /* Hue pendukung untuk variasi kartu (tetap selaras) */
+  --violet-500: #8B5CF6;
+  --violet-700: #6D28D9;
+  --emerald-500:#10B981;
+  --emerald-700:#047857;
+  --rose-500:   #F43F5E;
+  --rose-700:   #BE123C;
+  --sky-500:    #06B6D4;
+
+  /* --- Token GRADIEN (dipakai ulang di banyak komponen) --- */
+  --grad-brand:   linear-gradient(135deg, var(--indigo-500) 0%, var(--indigo-700) 100%);
+  /* Amber sengaja terang → dipasangkan teks GELAP agar kontras AA terpenuhi */
+  --grad-accent:  linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+  --grad-hero:    linear-gradient(120deg, var(--indigo-600) 0%, var(--violet-500) 55%, var(--amber-500) 115%);
+  --grad-saldo:   linear-gradient(135deg, #6366F1 0%, #4338CA 100%);
+  --grad-income:  linear-gradient(135deg, #10B981 0%, #047857 100%);
+  --grad-expense: linear-gradient(135deg, #FB7185 0%, #BE123C 100%);
+  --grad-net:     linear-gradient(135deg, #A78BFA 0%, #6D28D9 100%);
+  /* Lapisan tipis di permukaan kartu glass */
+  --grad-card-sheen: linear-gradient(160deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.10) 38%, rgba(255,255,255,0) 70%);
+}
+
+/* --- Dark mode: navy gelap dengan brand indigo lebih terang --- */
+[data-theme="dark"] {
+  --primary: #818CF8;       /* indigo-300/400 — kontras lebih baik di gelap */
+  --primary-light: #1E1B4B;
+  --primary-dark: #6366F1;
+  --primary-darker: #4F46E5;
+  --accent: #FBBF24;
+  --accent-dark: #F59E0B;
+  --bg-white: #0B1020;
+
+  --bg: #131A2E;
+  --card: #151B30;
+  --text: #E2E8F0;
+  --text-2: #94A3B8;
+  --btn: #6366F1;
+  --border: #28304A;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -14px rgba(0, 0, 0, 0.6);
+
+  --pos: #34D399;
+  --neg: #FB7185;
+  --warning: #FBBF24;
+  --warning-bg: #3A2A0C;
+  --danger: #FB7185;
+  --danger-bg: #3A1620;
+  --success-bg: #0C2C22;
+  --progress-safe: #34D399;
+  --progress-warn: #FBBF24;
+  --progress-over: #FB7185;
+
+  --glass-bg: rgba(21, 27, 48, 0.70);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Skala & gradien versi gelap (sedikit lebih menyala) */
+  --indigo-50:  #1E1B4B;
+  --indigo-100: #28235C;
+  --amber-50:   #3A2A0C;
+  --violet-500: #A78BFA;
+  --grad-saldo:   linear-gradient(135deg, #6366F1 0%, #4338CA 100%);
+  --grad-income:  linear-gradient(135deg, #34D399 0%, #059669 100%);
+  --grad-expense: linear-gradient(135deg, #FB7185 0%, #BE123C 100%);
+  --grad-net:     linear-gradient(135deg, #A78BFA 0%, #6D28D9 100%);
+  --grad-card-sheen: linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 40%, rgba(255,255,255,0) 72%);
+}
+
+/* ---------------------------------------------------------
+   2. Background bergradien lembut (mesh)
+   --------------------------------------------------------- */
+body {
+  background:
+    radial-gradient(820px 560px at 4% -10%, rgba(99, 102, 241, 0.22) 0%, transparent 56%),
+    radial-gradient(760px 560px at 100% 2%, rgba(245, 158, 11, 0.16) 0%, transparent 54%),
+    radial-gradient(720px 560px at 88% 96%, rgba(236, 72, 153, 0.12) 0%, transparent 56%),
+    radial-gradient(900px 700px at 40% 118%, rgba(139, 92, 246, 0.18) 0%, transparent 60%),
+    linear-gradient(180deg, #F6F8FF 0%, #EEF2F9 100%);
+  background-attachment: fixed;
+  color: var(--text);
+}
+[data-theme="dark"] body {
+  background:
+    radial-gradient(820px 560px at 4% -10%, rgba(99, 102, 241, 0.26) 0%, transparent 56%),
+    radial-gradient(760px 560px at 100% 2%, rgba(245, 158, 11, 0.12) 0%, transparent 54%),
+    radial-gradient(720px 560px at 88% 96%, rgba(236, 72, 153, 0.14) 0%, transparent 56%),
+    radial-gradient(900px 700px at 40% 118%, rgba(139, 92, 246, 0.22) 0%, transparent 60%),
+    linear-gradient(180deg, #0B1020 0%, #060912 100%);
+  background-attachment: fixed;
+}
+
+/* Warna seleksi teks mengikuti brand */
+::selection { background: rgba(99, 102, 241, 0.22); }
+
+/* ---------------------------------------------------------
+   2b. Tipografi — isi Plus Jakarta Sans, judul/angka Space Grotesk
+   --------------------------------------------------------- */
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.005em;
+}
+
+/* Judul & angka penting → Space Grotesk (lebih tegas, geometris) */
+h1, h2, h3, h4,
+.page-title,
+.topbar-title,
+.card-title,
+.modal-title,
+.auth-title,
+.sidebar-logo-text,
+.auth-logo-text,
+#salam-nama,
+.stat-card-value,
+.stat-strip-value,
+.market-card-value,
+.market-hero-value,
+.goal-card-name,
+.goal-amount-value,
+.avatar {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Angka rupiah/tabel → figur tabular agar lebar digit konsisten (anti-geser) */
+.stat-card-value,
+.stat-strip-value,
+.market-card-value,
+.market-hero-value,
+.goal-amount-value,
+td,
+.list-item-sub,
+.progress-label {
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ---------------------------------------------------------
+   3. Permukaan: GLASS (navigasi & overlay) vs SOLID (konten)
+   --------------------------------------------------------- */
+/* Sembunyikan elemen Alpine sampai komponen siap (cegah kedip) */
+[x-cloak] { display: none !important; }
+
+/* 3a. Glass — hanya untuk pembungkus navigasi/overlay & kartu hero */
+.glass-card,
+.glass-panel {
+  background: var(--grad-card-sheen), var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+}
+
+.sidebar {
+  background:
+    linear-gradient(180deg, rgba(99,102,241,0.10) 0%, rgba(139,92,246,0.04) 30%, transparent 70%),
+    var(--glass-bg) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border-color: var(--glass-border) !important;
+}
+.topbar {
+  background:
+    linear-gradient(90deg, rgba(99,102,241,0.07) 0%, transparent 45%, rgba(245,158,11,0.06) 100%),
+    var(--glass-bg) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border-color: var(--glass-border) !important;
+  /* JANGAN set position di sini — biarkan `position: fixed` dari style.css.
+     Topbar fixed sudah jadi acuan posisi untuk ::after di bawah. */
+}
+/* Garis aksen bergradien tipis di bawah topbar */
+.topbar::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 2px;
+  background: var(--grad-hero);
+  opacity: 0.55;
+}
+
+.modal {
+  background: var(--card) !important;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+/* Scrim modal cukup pekat agar konten depan terbaca */
+.modal-overlay { background: rgba(15, 23, 42, 0.55) !important; }
+[data-theme="dark"] .modal-overlay { background: rgba(2, 6, 16, 0.66) !important; }
+
+/* 3b. Solid — kartu konten & data (kontras teks tinggi) + sheen gradien halus */
+.card,
+.stat-card,
+.market-card,
+.goal-card,
+.auth-card {
+  background:
+    linear-gradient(160deg, rgba(99,102,241,0.05) 0%, rgba(245,158,11,0.025) 42%, transparent 72%),
+    var(--card) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow) !important;
+}
+[data-theme="dark"] .card,
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .market-card,
+[data-theme="dark"] .goal-card,
+[data-theme="dark"] .auth-card {
+  background:
+    linear-gradient(160deg, rgba(129,140,248,0.10) 0%, rgba(251,191,36,0.04) 42%, transparent 72%),
+    var(--card) !important;
+}
+
+/* ---------------------------------------------------------
+   4. Aksen komponen — Indigo brand, Amber pop
+   --------------------------------------------------------- */
+/* Tautan teks → indigo */
+a:not(.btn):not(.nav-item):not(.sidebar-logo) { color: var(--primary-dark); }
+[data-theme="dark"] a:not(.btn):not(.nav-item):not(.sidebar-logo) { color: var(--primary); }
+
+/* Logo & brand text — pakai amber gelap agar terbaca di latar terang */
+.sidebar-logo-icon,
+.auth-logo-icon { background: var(--grad-brand) !important; }
+.sidebar-logo-text span,
+.auth-logo-text span { color: var(--accent-dark) !important; }
+[data-theme="dark"] .sidebar-logo-text span,
+[data-theme="dark"] .auth-logo-text span { color: var(--accent) !important; }
+
+/* Ikon "accent" generik → indigo lembut */
+.icon-accent { background-color: var(--indigo-50) !important; color: var(--primary-dark) !important; }
+[data-theme="dark"] .icon-accent { color: var(--primary) !important; }
+
+/* Avatar */
+.avatar { background: var(--grad-brand) !important; color: #fff !important; }
+
+/* Tabs & segmented aktif → indigo */
+.tab-btn.active { color: var(--primary-dark) !important; border-bottom-color: var(--primary) !important; }
+[data-theme="dark"] .tab-btn.active { color: var(--primary) !important; }
+.segmented-btn.active { color: var(--primary-dark) !important; }
+[data-theme="dark"] .segmented-btn.active { color: var(--primary) !important; }
+
+/* Badge sumber data live/cache tetap semantik */
+.source-badge.live .dot { background-color: var(--pos); }
+.source-badge.cache .dot { background-color: var(--warning); }
+
+/* ---------------------------------------------------------
+   5. Tombol — gradien brand + state jelas
+   --------------------------------------------------------- */
+.btn-primary {
+  background: var(--grad-brand) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 6px 16px -6px rgba(79, 70, 229, 0.55);
+}
+.btn-primary:hover { filter: brightness(1.06); }
+
+.btn-accent {
+  background: var(--grad-accent) !important;
+  color: #1F2937 !important;   /* teks gelap di atas amber → kontras AA */
+  border: none !important;
+}
+.btn-accent .material-symbols-outlined { color: #1F2937 !important; }
+.btn-accent:hover { filter: brightness(1.03); }
+
+.btn-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 150%);
+  color: #fff;
+  border: none;
+}
+.btn-gradient:hover { filter: brightness(1.05); }
+
+.btn-danger { background: var(--neg) !important; color: #fff !important; }
+
+/* State disabled jelas & tidak bisa diklik (aksesibilitas) */
+.btn:disabled,
+.btn[disabled],
+.btn[aria-disabled="true"],
+.form-control:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Target sentuh minimal 40px untuk tombol ikon (mendekati 44px standar) */
+.btn-icon { min-width: 40px; min-height: 40px; }
+
+/* ---------------------------------------------------------
+   6. Fokus terlihat (keyboard a11y) — JANGAN hilangkan outline
+   --------------------------------------------------------- */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+.btn-icon:focus-visible,
+.nav-item:focus-visible,
+.tab-btn:focus-visible,
+.segmented-btn:focus-visible,
+.theme-toggle:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.form-control:focus,
+.form-control:focus-visible {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22) !important;
+  outline: none;
+}
+
+/* ---------------------------------------------------------
+   7. Sidebar — item hover & aktif
+   --------------------------------------------------------- */
+.nav-item { transition: background-color 0.18s ease, color 0.18s ease; }
+.nav-item:hover { background-color: var(--indigo-50) !important; color: var(--primary-dark) !important; }
+[data-theme="dark"] .nav-item:hover { background-color: rgba(99,102,241,0.14) !important; color: var(--primary) !important; }
+
+.nav-item.active {
+  background: var(--grad-brand) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 18px -6px rgba(79, 70, 229, 0.5);
+}
+.nav-item.active .material-symbols-outlined { color: #fff !important; }
+
+/* ---------------------------------------------------------
+   8. Judul halaman & sapaan → teks bergradien brand
+   --------------------------------------------------------- */
+.page-title,
+#salam-nama {
+  background: var(--grad-hero);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ---------------------------------------------------------
+   9. Kartu statistik — solid + bilah aksen + halo + hover lift
+   --------------------------------------------------------- */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px -16px rgba(15, 23, 42, 0.24) !important;
+}
+/* Bilah aksen tipis di sisi atas tiap kartu */
+.stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--grad-brand);
+}
+/* Halo gradien lembut di pojok kanan-atas */
+.stat-card::after {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: var(--grad-brand);
+  opacity: 0.10;
+  pointer-events: none;
+}
+
+/* Tiap kartu di grid-4 punya hue berbeda namun selaras */
+.grid-4 .stat-card:nth-child(1)::before { background: var(--grad-saldo); }
+.grid-4 .stat-card:nth-child(1)::after  { background: var(--grad-saldo); }
+.grid-4 .stat-card:nth-child(2)::before { background: var(--grad-income); }
+.grid-4 .stat-card:nth-child(2)::after  { background: var(--grad-income); }
+.grid-4 .stat-card:nth-child(3)::before { background: var(--grad-expense); }
+.grid-4 .stat-card:nth-child(3)::after  { background: var(--grad-expense); }
+.grid-4 .stat-card:nth-child(4)::before { background: var(--grad-net); }
+.grid-4 .stat-card:nth-child(4)::after  { background: var(--grad-net); }
+
+/* Ikon label kartu → chip bulat bergradien sesuai hue kartu */
+.stat-card-label .material-symbols-outlined {
+  background: var(--grad-brand);
+  color: #fff;
+  border-radius: 9px;
+  padding: 4px;
+  font-size: 1.05rem !important;
+  box-shadow: 0 4px 10px -3px rgba(15, 23, 42, 0.25);
+}
+.grid-4 .stat-card:nth-child(1) .stat-card-label .material-symbols-outlined { background: var(--grad-saldo); }
+.grid-4 .stat-card:nth-child(2) .stat-card-label .material-symbols-outlined { background: var(--grad-income); }
+.grid-4 .stat-card:nth-child(3) .stat-card-label .material-symbols-outlined { background: var(--grad-expense); }
+.grid-4 .stat-card:nth-child(4) .stat-card-label .material-symbols-outlined { background: var(--grad-net); }
+
+/* Nilai income/expense → gradien (stop gelap agar kontras teks besar ≥3:1) */
+.stat-card-value.positive {
+  background: var(--grad-income);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+.stat-card-value.negative {
+  background: var(--grad-expense);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+
+/* ---------------------------------------------------------
+   10. Kartu biasa — hover lift halus + aksen judul
+   --------------------------------------------------------- */
+.card { transition: transform 0.22s ease, box-shadow 0.22s ease; }
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px -16px rgba(15, 23, 42, 0.20) !important;
+}
+.card-title {
+  position: relative;
+  padding-left: 0.7rem;
+}
+.card-title::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 4px; height: 1em;
+  border-radius: 9999px;
+  background: var(--grad-brand);
+}
+
+/* ---------------------------------------------------------
+   11. Progress bar → isian bergradien
+   --------------------------------------------------------- */
+.progress-bar.safe { background: var(--grad-income) !important; }
+.progress-bar.warn { background: linear-gradient(135deg, #FCD34D 0%, var(--amber-500) 100%) !important; }
+.progress-bar.over { background: var(--grad-expense) !important; }
+
+/* ---------------------------------------------------------
+   12. Ikon daftar (pos/neg/accent) → chip bergradien
+   --------------------------------------------------------- */
+.list-item-icon.icon-pos    { background: var(--grad-income) !important; color: #fff !important; }
+.list-item-icon.icon-neg    { background: var(--grad-expense) !important; color: #fff !important; }
+.list-item-icon.icon-accent { background: var(--grad-brand) !important;  color: #fff !important; }
+
+/* Badge persen → halus bergradien */
+.badge.badge-pos { background: var(--grad-income); color: #fff; }
+.badge.badge-neutral { background: var(--indigo-50); color: var(--primary-dark); border: none; }
+[data-theme="dark"] .badge.badge-neutral { background: rgba(99,102,241,0.16); color: var(--primary); }
+
+/* ---------------------------------------------------------
+   13. Chip ringkas + tooltip erosi
+   --------------------------------------------------------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+[data-theme="dark"] .pill { color: var(--primary); }
+
+.erosi-badge.erosi-neg { background-color: var(--danger-bg); color: var(--neg); }
+.erosi-badge.erosi-pos { background-color: var(--success-bg); color: var(--pos); }
+
+/* ---------------------------------------------------------
+   14. Animasi (hormati prefers-reduced-motion)
+   --------------------------------------------------------- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: fadeInUp 0.5s ease both; }
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+.floaty { animation: floaty 3.5s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-card, .card { transition: none; }
+  .stat-card:hover, .card:hover { transform: none; }
+  .animate-in { animation: none; }
+  .floaty { animation: none; }
+}
+
+/* ---------------------------------------------------------
+   15. Scrollbar bertema (WebKit)
+   --------------------------------------------------------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.40);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.65); background-clip: content-box; }
+
+/* ==========================================================
+   16. GRADASI DIPERKAYA (lapisan tambahan, tetap aman kontras)
+   ========================================================== */
+
+/* 16.1 Angka headline market → teks bergradien brand (teks besar, ≥3:1) */
+.market-hero-value,
+.market-card-value {
+  background: var(--grad-saldo);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+
+/* 16.2 Pill → latar bergradien lembut */
+.pill {
+  background: linear-gradient(135deg, var(--indigo-50) 0%, #FDF1D8 100%);
+  color: var(--primary-dark);
+}
+[data-theme="dark"] .pill {
+  background: linear-gradient(135deg, rgba(99,102,241,0.20) 0%, rgba(245,158,11,0.14) 100%);
+  color: var(--primary);
+}
+
+/* 16.3 Tab aktif → garis bawah bergradien (bukan sekadar 1 warna) */
+.tab-btn { position: relative; }
+.tab-btn.active::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -2px;
+  height: 2px;
+  border-radius: 9999px;
+  background: var(--grad-brand);
+}
+
+/* 16.4 Segmented aktif → permukaan sedikit bergradien */
+.segmented-btn.active {
+  background: linear-gradient(135deg, var(--card) 0%, var(--indigo-50) 130%) !important;
+  box-shadow: 0 2px 8px -2px rgba(79,70,229,0.25);
+}
+
+/* 16.5 Tombol outline → tint indigo bergradien saat hover */
+.btn-outline:hover {
+  background: linear-gradient(135deg, var(--indigo-50) 0%, rgba(245,158,11,0.10) 130%) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary-dark) !important;
+}
+[data-theme="dark"] .btn-outline:hover {
+  background: linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(245,158,11,0.10) 130%) !important;
+  color: var(--primary) !important;
+}
+
+/* 16.6 Divider → garis bergradien yang memudar di ujung */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--border) 18%, var(--border) 82%, transparent 100%) !important;
+}
+
+/* 16.7 Auth card → bilah aksen bergradien di tepi atas */
+.auth-card {
+  position: relative;
+  overflow: hidden;
+}
+.auth-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--grad-hero);
+}
+
+/* 16.8 Label section pengaturan → aksen bergradien */
+.settings-section-title { position: relative; padding-left: 0.7rem; }
+.settings-section-title::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 4px; height: 0.9em;
+  border-radius: 9999px;
+  background: var(--grad-brand);
+}
+
+/* 16.9 Tombol toggle tema → sentuhan gradien saat hover */
+.theme-toggle:hover {
+  background: linear-gradient(135deg, var(--indigo-50) 0%, rgba(245,158,11,0.12) 140%) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary-dark) !important;
+}
+[data-theme="dark"] .theme-toggle:hover { color: var(--primary) !important; }

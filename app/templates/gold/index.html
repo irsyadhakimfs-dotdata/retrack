@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block title %}Investasi Emas{% endblock %}
+{% block page_title %}Investasi Emas{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Investasi Emas</h2>
+    <p class="page-subtitle">Catat pembelian emas (gram) &amp; pantau kenaikan nilainya terhadap harga pasar</p>
+  </div>
+  <button class="btn btn-primary" onclick="bukaModalTambahEmas()">
+    <span class="material-symbols-outlined">add</span>
+    Catat Emas
+  </button>
+</div>
+
+<!-- ===== Kartu Ringkasan ===== -->
+<div class="grid-4 mb-4">
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined" style="color:#D97706;">workspace_premium</span>
+      Total Emas
+    </div>
+    <div class="stat-card-value" id="emas-total-gram">—</div>
+    <div class="stat-card-change" id="emas-jumlah-catatan">Memuat…</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">payments</span>
+      Total Modal
+    </div>
+    <div class="stat-card-value" id="emas-total-modal">—</div>
+    <div class="stat-card-change">Harga beli</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">account_balance</span>
+      Nilai Sekarang
+    </div>
+    <div class="stat-card-value" id="emas-nilai-sekarang">—</div>
+    <div class="stat-card-change" id="emas-harga-gram">Memuat harga…</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">trending_up</span>
+      Kenaikan Nilai
+    </div>
+    <div class="stat-card-value" id="emas-kenaikan">—</div>
+    <div class="stat-card-change" id="emas-kenaikan-persen">vs modal</div>
+  </div>
+</div>
+
+<!-- ===== Grafik Riwayat Harga Emas ===== -->
+<div class="card mb-4">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Riwayat Harga Emas (per gram)</div>
+      <div class="card-subtitle" id="emas-chart-subtitle">Memuat riwayat…</div>
+    </div>
+    <div class="segmented" id="emas-range-selector">
+      <button class="segmented-btn" data-months="1" onclick="gantiRentangEmas(1)">1B</button>
+      <button class="segmented-btn active" data-months="3" onclick="gantiRentangEmas(3)">3B</button>
+      <button class="segmented-btn" data-months="6" onclick="gantiRentangEmas(6)">6B</button>
+    </div>
+  </div>
+
+  <div id="emas-chart-container" style="position:relative; height:260px; margin-top:0.5rem;">
+    <canvas id="chart-emas"></canvas>
+  </div>
+
+  <div id="emas-chart-fallback" class="empty-state" style="display:none;">
+    <span class="material-symbols-outlined">wifi_off</span>
+    <div class="empty-state-title">Riwayat harga emas belum tersedia</div>
+    <div class="empty-state-desc">Sumber data sedang sibuk — coba perbarui beberapa saat lagi.</div>
+  </div>
+</div>
+
+<!-- ===== Pesan Error / Loading ===== -->
+<div id="pesan-emas"></div>
+
+<!-- ===== Tabel Kepemilikan Emas ===== -->
+<div class="card">
+  <div class="table-wrap">
+    <table id="tabel-emas">
+      <thead>
+        <tr>
+          <th>Tanggal Masuk</th>
+          <th style="text-align:right;">Gram</th>
+          <th style="text-align:right;">Harga Beli/gr</th>
+          <th style="text-align:right;">Modal</th>
+          <th style="text-align:right;">Nilai Sekarang</th>
+          <th style="text-align:right;">Kenaikan</th>
+          <th>Catatan</th>
+          <th style="text-align:center;">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-emas">
+        <tr><td colspan="8" class="text-muted text-sm">Memuat data emas...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Modal Tambah / Edit Emas ===== -->
+<div class="modal-overlay" id="modal-emas">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-emas-judul">Catat Pembelian Emas</h3>
+      <button class="modal-close" onclick="closeModal('modal-emas')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="error-modal-emas" style="display:none;" class="alert alert-danger mb-3"></div>
+
+      <form id="form-emas">
+        <input type="hidden" id="em-id" value="">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="em-gram">Berat (gram)</label>
+            <input class="form-control" type="number" id="em-gram" name="grams"
+                   placeholder="0" min="0.001" step="0.001" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="em-harga">Harga Beli per gram (Rp)</label>
+            <input class="form-control" type="number" id="em-harga" name="buy_price_per_gram"
+                   placeholder="0" min="1" required>
+            <small class="text-muted" style="font-size:0.75rem;">
+              <a href="#" onclick="pakaiHargaPasar(event)">Pakai harga pasar saat ini</a>
+              <span id="em-harga-pasar-hint"></span>
+            </small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="em-tanggal">Tanggal Masuk</label>
+            <input class="form-control" type="date" id="em-tanggal" name="date" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="em-waktu">Waktu Masuk</label>
+            <input class="form-control" type="time" id="em-waktu" name="time">
+            <small class="text-muted" style="font-size:0.75rem;">Default: jam saat ini. Bisa diedit.</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="em-note">Catatan (opsional)</label>
+          <input class="form-control" type="text" id="em-note" name="note"
+                 placeholder="mis. Antam 5gr, Pegadaian">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-emas')">Batal</button>
+      <button class="btn btn-primary" onclick="simpanEmas()">Simpan</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const MARKET_REFRESH_MS = {{ refresh_hours }} * 60 * 60 * 1000;
+</script>
+<script>
+// Harga emas pasar terkini per gram (untuk tombol "pakai harga pasar")
+let _hargaPasarPerGram = null;
+// Referensi chart & rentang aktif
+let _chartEmas = null;
+let _rangeEmasBulan = 3;
+
+/** Format rupiah ringkas. */
+function fmtRp(n) {
+  return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+}
+
+/** Escape HTML untuk cegah XSS. */
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(str == null ? '' : str));
+  return d.innerHTML;
+}
+
+// -------------------------------------------------------
+// Memuat data kepemilikan + ringkasan
+// -------------------------------------------------------
+async function muatEmas() {
+  const tbody = document.getElementById('tbody-emas');
+  try {
+    const data = await apiGet('/api/gold');
+    _hargaPasarPerGram = data.current_price_per_gram;
+    renderRingkasan(data.summary, data.current_price_per_gram);
+    renderTabel(data.holdings);
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-muted text-sm">${escHtml(err.message)}</td></tr>`;
+  }
+}
+
+/** Tampilkan kartu ringkasan. */
+function renderRingkasan(s, hargaGram) {
+  document.getElementById('emas-total-gram').textContent =
+    (s.total_grams || 0).toLocaleString('id-ID') + ' gr';
+  document.getElementById('emas-jumlah-catatan').textContent =
+    `dari ${s.count} catatan`;
+  document.getElementById('emas-total-modal').textContent = fmtRp(s.total_cost || 0);
+
+  document.getElementById('emas-nilai-sekarang').textContent =
+    s.total_value === null || s.total_value === undefined ? '—' : fmtRp(s.total_value);
+  document.getElementById('emas-harga-gram').textContent =
+    hargaGram ? `Harga: ${fmtRp(hargaGram)}/gr` : 'Harga pasar tidak tersedia';
+
+  const elNaik = document.getElementById('emas-kenaikan');
+  const elNaikPct = document.getElementById('emas-kenaikan-persen');
+  if (s.total_gain === null || s.total_gain === undefined) {
+    elNaik.textContent = '—';
+    elNaikPct.textContent = 'vs modal';
+    elNaik.className = 'stat-card-value';
+  } else {
+    const naik = s.total_gain >= 0;
+    elNaik.textContent = (naik ? '+' : '−') + fmtRp(Math.abs(s.total_gain));
+    elNaik.className = 'stat-card-value ' + (naik ? 'positive' : 'negative');
+    elNaikPct.innerHTML = `<span style="color:${naik ? 'var(--pos)' : 'var(--neg)'};font-weight:700;">`
+      + `${naik ? '▲' : '▼'} ${Math.abs(s.gain_persen || 0).toFixed(2)}%</span> vs modal`;
+  }
+}
+
+/** Render baris tabel kepemilikan. */
+function renderTabel(holdings) {
+  const tbody = document.getElementById('tbody-emas');
+  if (!holdings || holdings.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-muted text-sm">Belum ada catatan emas. Klik "Catat Emas" untuk mulai.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = holdings.map(h => {
+    const tgl = new Date(h.buy_date + 'T00:00:00')
+      .toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' });
+    const waktu = h.buy_time ? ` · ${h.buy_time}` : '';
+
+    let selKenaikan = '<span class="text-muted">—</span>';
+    if (h.gain !== null && h.gain !== undefined) {
+      const naik = h.gain >= 0;
+      const warna = naik ? 'var(--pos)' : 'var(--neg)';
+      selKenaikan = `<span style="color:${warna};font-weight:700;">`
+        + `${naik ? '+' : '−'}${fmtRp(Math.abs(h.gain))} (${Math.abs(h.gain_persen || 0).toFixed(1)}%)</span>`;
+    }
+    const nilaiSekarang = (h.current_value === null || h.current_value === undefined)
+      ? '<span class="text-muted">—</span>' : fmtRp(h.current_value);
+
+    return `
+      <tr>
+        <td>${tgl}${waktu}</td>
+        <td style="text-align:right;">${(h.grams).toLocaleString('id-ID')} gr</td>
+        <td style="text-align:right;">${fmtRp(h.buy_price_per_gram)}</td>
+        <td style="text-align:right;">${fmtRp(h.cost)}</td>
+        <td style="text-align:right;">${nilaiSekarang}</td>
+        <td style="text-align:right;">${selKenaikan}</td>
+        <td>${escHtml(h.note || '—')}</td>
+        <td style="text-align:center; white-space:nowrap;">
+          <button class="btn btn-icon btn-sm" title="Edit" onclick='bukaModalEditEmas(${JSON.stringify(h)})'>
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+          <button class="btn btn-icon btn-sm" title="Hapus" onclick="hapusEmas(${h.id})">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+// -------------------------------------------------------
+// Grafik riwayat harga emas
+// -------------------------------------------------------
+function gantiRentangEmas(bulan) {
+  _rangeEmasBulan = bulan;
+  document.querySelectorAll('#emas-range-selector .segmented-btn').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.months) === bulan);
+  });
+  muatChartEmas();
+}
+
+async function muatChartEmas() {
+  const container = document.getElementById('emas-chart-container');
+  const fallback = document.getElementById('emas-chart-fallback');
+  const subtitle = document.getElementById('emas-chart-subtitle');
+  try {
+    const resp = await fetch(`/api/market/gold/history?months=${_rangeEmasBulan}`);
+    const body = await resp.json();
+    const history = body.ok ? body.data : [];
+
+    if (history.length < 2) {
+      container.style.display = 'none';
+      fallback.style.display = 'block';
+      subtitle.textContent = 'Data riwayat tidak tersedia';
+      return;
+    }
+
+    container.style.display = 'block';
+    fallback.style.display = 'none';
+    subtitle.textContent = `${history.length} titik data · ${_rangeEmasBulan} bulan terakhir`;
+
+    const labels = history.map(d => d.date);
+    const values = history.map(d => d.price_idr);
+
+    if (_chartEmas) {
+      _chartEmas.destroy();
+      if (window._rfCharts) window._rfCharts = window._rfCharts.filter(c => c !== _chartEmas);
+    }
+    _chartEmas = initGoldLineChart('chart-emas', labels, values);
+  } catch {
+    container.style.display = 'none';
+    fallback.style.display = 'block';
+    subtitle.textContent = 'Gagal memuat riwayat harga emas';
+  }
+}
+
+// -------------------------------------------------------
+// Modal tambah / edit
+// -------------------------------------------------------
+function _resetFormEmas() {
+  document.getElementById('em-id').value = '';
+  document.getElementById('form-emas').reset();
+  document.getElementById('error-modal-emas').style.display = 'none';
+  const hint = document.getElementById('em-harga-pasar-hint');
+  hint.textContent = _hargaPasarPerGram ? ` (≈ ${fmtRp(_hargaPasarPerGram)}/gr)` : '';
+}
+
+function bukaModalTambahEmas() {
+  _resetFormEmas();
+  document.getElementById('modal-emas-judul').textContent = 'Catat Pembelian Emas';
+  // Default tanggal & waktu = sekarang
+  const now = new Date();
+  document.getElementById('em-tanggal').value = now.toISOString().slice(0, 10);
+  document.getElementById('em-waktu').value = now.toTimeString().slice(0, 5);
+  openModal('modal-emas');
+}
+
+function bukaModalEditEmas(h) {
+  _resetFormEmas();
+  document.getElementById('modal-emas-judul').textContent = 'Edit Catatan Emas';
+  document.getElementById('em-id').value = h.id;
+  document.getElementById('em-gram').value = h.grams;
+  document.getElementById('em-harga').value = h.buy_price_per_gram;
+  document.getElementById('em-tanggal').value = h.buy_date;
+  document.getElementById('em-waktu').value = h.buy_time || '';
+  document.getElementById('em-note').value = h.note || '';
+  openModal('modal-emas');
+}
+
+function pakaiHargaPasar(e) {
+  e.preventDefault();
+  if (_hargaPasarPerGram) {
+    document.getElementById('em-harga').value = _hargaPasarPerGram;
+  }
+}
+
+async function simpanEmas() {
+  const id = document.getElementById('em-id').value;
+  const errBox = document.getElementById('error-modal-emas');
+  errBox.style.display = 'none';
+
+  const payload = {
+    grams: parseFloat(document.getElementById('em-gram').value),
+    buy_price_per_gram: parseInt(document.getElementById('em-harga').value, 10),
+    date: document.getElementById('em-tanggal').value,
+    time: document.getElementById('em-waktu').value || undefined,
+    note: document.getElementById('em-note').value || undefined,
+  };
+
+  try {
+    if (id) {
+      await apiPut(`/api/gold/${id}`, payload);
+    } else {
+      await apiPost('/api/gold', payload);
+    }
+    closeModal('modal-emas');
+    await muatEmas();
+  } catch (err) {
+    errBox.textContent = err.message;
+    errBox.style.display = 'block';
+  }
+}
+
+async function hapusEmas(id) {
+  if (!confirm('Hapus catatan emas ini?')) return;
+  try {
+    await apiDelete(`/api/gold/${id}`);
+    await muatEmas();
+  } catch (err) {
+    tampilkanError(document.getElementById('pesan-emas'), err.message);
+  }
+}
+
+// -------------------------------------------------------
+// Inisialisasi
+// -------------------------------------------------------
+document.addEventListener('DOMContentLoaded', function () {
+  muatEmas();
+  muatChartEmas();
+  setInterval(function () { muatEmas(); muatChartEmas(); }, MARKET_REFRESH_MS);
+});
+</script>
+{% endblock %}

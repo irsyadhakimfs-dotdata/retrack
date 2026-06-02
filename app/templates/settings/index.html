@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block title %}Pengaturan{% endblock %}
+{% block page_title %}Pengaturan{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Pengaturan</h2>
+    <p class="page-subtitle">Kelola profil, keamanan, dan preferensi tampilan</p>
+  </div>
+</div>
+
+<!-- Pesan sukses/error level halaman -->
+<div id="pesan-settings"></div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+
+  <!-- ===== Kolom Kiri ===== -->
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+    <!-- Profil -->
+    <div class="card">
+      <div class="settings-section-title">Profil Pengguna</div>
+
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="avatar" id="avatar-inisial" style="width: 64px; height: 64px; font-size: 1.5rem;">?</div>
+        <div>
+          <div class="fw-bold" id="profil-nama">Memuat...</div>
+          <div class="text-sm text-muted" id="profil-email">—</div>
+        </div>
+      </div>
+
+      <!-- Pesan error profil -->
+      <div id="error-profil" style="display:none;" class="alert alert-danger mb-3"></div>
+      <div id="sukses-profil" style="display:none;" class="alert alert-success mb-3"></div>
+
+      <form id="form-profil">
+        <div class="form-group">
+          <label class="form-label" for="pf-nama">Nama Lengkap</label>
+          <input class="form-control" type="text" id="pf-nama" name="name"
+                 placeholder="Nama lengkap" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pf-email">Email</label>
+          <input class="form-control" type="email" id="pf-email" name="email"
+                 placeholder="Email" disabled
+                 style="background:var(--bg); cursor:not-allowed;">
+          <span class="form-hint">Email tidak dapat diubah.</span>
+        </div>
+        <button type="button" class="btn btn-primary" id="btn-simpan-profil" onclick="simpanProfil()">
+          <span class="material-symbols-outlined">save</span>
+          Simpan Profil
+        </button>
+      </form>
+    </div>
+
+    <!-- Ganti Password -->
+    <div class="card">
+      <div class="settings-section-title">Ganti Kata Sandi</div>
+
+      <!-- Pesan error password -->
+      <div id="error-password" style="display:none;" class="alert alert-danger mb-3"></div>
+      <div id="sukses-password" style="display:none;" class="alert alert-success mb-3"></div>
+
+      <form id="form-password">
+        <div class="form-group">
+          <label class="form-label" for="pw-lama">Kata Sandi Lama</label>
+          <input class="form-control" type="password" id="pw-lama" name="current_password"
+                 placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pw-baru">Kata Sandi Baru</label>
+          <input class="form-control" type="password" id="pw-baru" name="new_password"
+                 placeholder="Min. 8 karakter">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pw-konfirmasi">Konfirmasi Kata Sandi Baru</label>
+          <input class="form-control" type="password" id="pw-konfirmasi" name="confirm_password"
+                 placeholder="Ulangi kata sandi baru">
+        </div>
+        <button type="button" class="btn btn-outline" id="btn-ganti-pw" onclick="gantiPassword()">
+          <span class="material-symbols-outlined">lock_reset</span>
+          Ganti Kata Sandi
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- ===== Kolom Kanan ===== -->
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+    <!-- Preferensi Tampilan -->
+    <div class="card">
+      <div class="settings-section-title">Preferensi Tampilan</div>
+
+      <div class="list-item" style="border: none; padding: 0.5rem 0;">
+        <div class="list-item-left">
+          <div class="list-item-icon icon-accent">
+            <span class="material-symbols-outlined">dark_mode</span>
+          </div>
+          <div>
+            <div class="list-item-name">Mode Gelap</div>
+            <div class="list-item-sub">Toggle antara tema terang dan gelap</div>
+          </div>
+        </div>
+        <!-- Toggle dark mode — event listener di main.js -->
+        <button class="theme-toggle" aria-label="Toggle dark mode">
+          <span class="material-symbols-outlined">dark_mode</span>
+          <span class="toggle-label">Gelap</span>
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="list-item" style="border: none; padding: 0.5rem 0;">
+        <div class="list-item-left">
+          <div class="list-item-icon icon-neutral">
+            <span class="material-symbols-outlined">language</span>
+          </div>
+          <div>
+            <div class="list-item-name">Bahasa</div>
+            <div class="list-item-sub">Bahasa antarmuka aplikasi</div>
+          </div>
+        </div>
+        <select class="form-control" style="width: auto; min-width: 120px;">
+          <option value="id" selected>Indonesia</option>
+          <option value="en" disabled>English (segera)</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="list-item" style="border: none; padding: 0.5rem 0;">
+        <div class="list-item-left">
+          <div class="list-item-icon icon-neutral">
+            <span class="material-symbols-outlined">monetization_on</span>
+          </div>
+          <div>
+            <div class="list-item-name">Mata Uang Default</div>
+            <div class="list-item-sub">Rupiah Indonesia</div>
+          </div>
+        </div>
+        <select class="form-control" style="width: auto; min-width: 120px;">
+          <option value="IDR" selected>IDR (Rp)</option>
+          <option value="USD" disabled>USD ($)</option>
+        </select>
+      </div>
+
+    </div>
+
+    <!-- Data & Ekspor -->
+    <div class="card">
+      <div class="settings-section-title">Data & Ekspor</div>
+
+      <div class="list-item" style="border: none; padding: 0.5rem 0;">
+        <div class="list-item-left">
+          <div class="list-item-icon icon-pos">
+            <span class="material-symbols-outlined">download</span>
+          </div>
+          <div>
+            <div class="list-item-name">Export Semua Transaksi</div>
+            <div class="list-item-sub">Unduh sebagai file CSV</div>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="eksporCSV()">
+          <span class="material-symbols-outlined">download</span>
+          Export CSV
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Zona Bahaya -->
+    <div class="card" style="border-color: var(--neg);">
+      <div class="settings-section-title" style="color: var(--neg);">Zona Berbahaya</div>
+
+      <div class="alert alert-danger mb-3" style="font-size: 0.8125rem;">
+        <span class="material-symbols-outlined">warning</span>
+        Tindakan berikut bersifat permanen dan tidak dapat dibatalkan.
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div class="fw-semibold text-sm">Hapus Semua Data Transaksi</div>
+            <div class="text-xs text-muted">Semua transaksi akan dihapus permanen</div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="hapusSemuaTransaksi()">
+            Hapus Data
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Keluar -->
+    <div class="card">
+      <a href="{{ url_for('auth_views.logout') }}" class="btn btn-outline w-full"
+         onclick="return confirm('Yakin ingin keluar?')">
+        <span class="material-symbols-outlined">logout</span>
+        Keluar dari Akun
+      </a>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+/**
+ * Muat data profil pengguna dari API dan isi form.
+ */
+async function muatProfil() {
+  try {
+    const me = await apiGet('/api/auth/me');
+    document.getElementById('profil-nama').textContent = me.name || '—';
+    document.getElementById('profil-email').textContent = me.email || '—';
+    document.getElementById('pf-nama').value = me.name || '';
+    document.getElementById('pf-email').value = me.email || '';
+
+    // Inisial avatar
+    const inisial = (me.name || 'U').charAt(0).toUpperCase();
+    document.getElementById('avatar-inisial').textContent = inisial;
+
+  } catch (err) {
+    document.getElementById('profil-nama').textContent = 'Gagal memuat profil';
+  }
+}
+
+/**
+ * Simpan perubahan nama profil.
+ */
+async function simpanProfil() {
+  const errEl = document.getElementById('error-profil');
+  const sukEl = document.getElementById('sukses-profil');
+  errEl.style.display = 'none';
+  sukEl.style.display = 'none';
+
+  const nama = document.getElementById('pf-nama').value.trim();
+  if (!nama) {
+    errEl.textContent = 'Nama tidak boleh kosong.';
+    errEl.style.display = '';
+    return;
+  }
+
+  const btn = document.getElementById('btn-simpan-profil');
+  btn.disabled = true;
+
+  try {
+    await apiPut('/api/auth/me', { name: nama });
+    document.getElementById('profil-nama').textContent = nama;
+    const inisial = nama.charAt(0).toUpperCase();
+    document.getElementById('avatar-inisial').textContent = inisial;
+    sukEl.textContent = 'Profil berhasil disimpan!';
+    sukEl.style.display = '';
+    setTimeout(() => { sukEl.style.display = 'none'; }, 3000);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/**
+ * Ganti password pengguna.
+ */
+async function gantiPassword() {
+  const errEl = document.getElementById('error-password');
+  const sukEl = document.getElementById('sukses-password');
+  errEl.style.display = 'none';
+  sukEl.style.display = 'none';
+
+  const pwLama = document.getElementById('pw-lama').value;
+  const pwBaru = document.getElementById('pw-baru').value;
+  const pwKonfirmasi = document.getElementById('pw-konfirmasi').value;
+
+  if (!pwLama || !pwBaru) {
+    errEl.textContent = 'Kata sandi lama dan baru wajib diisi.';
+    errEl.style.display = '';
+    return;
+  }
+  if (pwBaru !== pwKonfirmasi) {
+    errEl.textContent = 'Kata sandi baru dan konfirmasi tidak cocok.';
+    errEl.style.display = '';
+    return;
+  }
+  if (pwBaru.length < 8) {
+    errEl.textContent = 'Kata sandi baru minimal 8 karakter.';
+    errEl.style.display = '';
+    return;
+  }
+
+  const btn = document.getElementById('btn-ganti-pw');
+  btn.disabled = true;
+
+  try {
+    await apiPut('/api/auth/password', {
+      current_password: pwLama,
+      new_password: pwBaru,
+    });
+    sukEl.textContent = 'Kata sandi berhasil diubah!';
+    sukEl.style.display = '';
+    document.getElementById('form-password').reset();
+    setTimeout(() => { sukEl.style.display = 'none'; }, 3000);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/**
+ * Unduh semua transaksi sebagai CSV.
+ */
+function eksporCSV() {
+  window.location.href = '/api/export/csv';
+}
+
+/**
+ * Hapus semua transaksi (fitur placeholder — belum ada endpoint).
+ */
+function hapusSemuaTransaksi() {
+  if (confirm('PERINGATAN: Semua transaksi akan dihapus permanen. Lanjutkan?')) {
+    alert('Fitur ini belum tersedia. Hubungi administrator.');
+  }
+}
+
+// Muat profil saat halaman siap
+document.addEventListener('DOMContentLoaded', muatProfil);
+</script>
+{% endblock %}

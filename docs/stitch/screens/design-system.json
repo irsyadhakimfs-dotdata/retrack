@@ -1,0 +1,149 @@
+{
+  "designSystems": [
+    {
+      "name": "assets/c9ac3c636cbd4ba280ccf512c265d4a9",
+      "designSystem": {
+        "displayName": "ReFinance Design System",
+        "styleGuidelines": "## Brand & Style\nAplikasi ini dirancang dengan pendekatan **Minimalisme Modern** yang mengutamakan kejelasan data dan kepercayaan pengguna. Sebagai asisten keuangan pribadi, antarmuka harus terasa tenang, terorganisir, dan presisi. Fokus utama adalah pada visualisasi data (grafik dan angka) yang bersih tanpa gangguan elemen dekoratif yang berlebihan.\n\nTarget audiens adalah individu yang menghargai efisiensi dan transparansi dalam pengelolaan dana. Respon emosional yang ingin dicapai adalah rasa kendali (control) dan keamanan (security). Penggunaan ruang putih (whitespace) yang luas membantu pengguna fokus pada metrik keuangan yang paling krusial.\n\n## Layout & Spacing\nSistem ini menggunakan **Fixed Grid** pada desktop (12 kolom) untuk menjaga fokus di tengah layar, dan **Fluid Grid** pada mobile (4 kolom).\n\n- **Sistem Grid:** Layout desktop memiliki lebar kontainer maksimal 1200px.\n- **Rhythm:** Gunakan kelipatan 8px untuk margin antar elemen besar, dan 4px untuk elemen mikro di dalam komponen.\n- **Data Density:** Berikan padding yang cukup luas pada card (minimal 24px) agar grafik tidak terasa sesak.\n- **Mobile Reflow:** Pada perangkat mobile, elemen dashboard yang tadinya bersisian (side-by-side) akan bertumpuk secara vertikal (stacked) untuk menjaga keterbacaan teks.\n\n## Elevation & Depth\nDesain ini menggunakan teknik **Low-contrast outlines** yang dikombinasikan dengan **Tonal layering** untuk menciptakan kedalaman yang halus tanpa bayangan yang berat.\n\n- **Level 0 (Background):** Menggunakan warna `#F8FAFC` (Light) atau `#020617` (Dark).\n- **Level 1 (Cards/Containers):** Permukaan utama untuk konten. Memiliki border 1px dengan warna `#E2E8F0` (Light) atau `#334155` (Dark).\n- **Shadows:** Bayangan hanya digunakan pada elemen yang dapat melayang (seperti modal atau dropdown) dengan intensitas sangat rendah: `0px 4px 12px rgba(15, 23, 42, 0.05)`.\n- **Interaction:** Saat elemen di-hover, border dapat berubah menjadi warna `Accent` secara halus untuk memberikan feedback.\n\n## Components\nSetiap komponen dirancang untuk efisiensi input dan kejelasan output data.\n\n- **Buttons:**\n  - *Primary:* Latar belakang solid (`Text Primary` di Light, `Accent` di Dark), tanpa border.\n  - *Secondary:* Ghost style dengan border 1px dan teks warna `Accent`.\n- **Input Fields:** Latar belakang putih (Light) atau gelap (Dark) dengan border tipis. Label diletakkan di atas input, bukan sebagai placeholder, untuk aksesibilitas.\n- **Financial Cards:** Kartu ringkasan saldo harus memiliki kontras tinggi. Gunakan ukuran font `headline-md` untuk angka saldo.\n- **Transaction List:** Baris transaksi memiliki tinggi minimal 64px dengan ikon kategori di sisi kiri. Indikator nominal menggunakan warna `Income` atau `Expense`.\n- **Progress Bars:** Digunakan untuk pelacakan anggaran (budgeting). Gunakan warna `Accent` untuk progres normal dan beralih ke `Expense` jika anggaran terlampaui.\n- **Chips:** Digunakan untuk filter waktu (Harian, Mingguan, Bulanan). Chip yang aktif menggunakan warna latar belakang `Accent` dengan teks putih.",
+        "theme": {
+          "colorMode": "LIGHT",
+          "font": "MANROPE",
+          "roundness": "ROUND_EIGHT",
+          "customColor": "#0f172a",
+          "headlineFont": "MANROPE",
+          "bodyFont": "MANROPE",
+          "labelFont": "MANROPE",
+          "namedColors": {
+            "background": "#fcf8fa",
+            "error": "#ba1a1a",
+            "error_container": "#ffdad6",
+            "inverse_on_surface": "#f3f0f2",
+            "inverse_primary": "#bec6e0",
+            "inverse_surface": "#303032",
+            "on_background": "#1b1b1d",
+            "on_error": "#ffffff",
+            "on_error_container": "#93000a",
+            "on_primary": "#ffffff",
+            "on_primary_container": "#7c839b",
+            "on_primary_fixed": "#131b2e",
+            "on_primary_fixed_variant": "#3f465c",
+            "on_secondary": "#ffffff",
+            "on_secondary_container": "#fefcff",
+            "on_secondary_fixed": "#00174b",
+            "on_secondary_fixed_variant": "#003ea8",
+            "on_surface": "#1b1b1d",
+            "on_surface_variant": "#45464d",
+            "on_tertiary": "#ffffff",
+            "on_tertiary_container": "#98805d",
+            "on_tertiary_fixed": "#271901",
+            "on_tertiary_fixed_variant": "#574425",
+            "outline": "#76777d",
+            "outline_variant": "#c6c6cd",
+            "primary": "#000000",
+            "primary_container": "#131b2e",
+            "primary_fixed": "#dae2fd",
+            "primary_fixed_dim": "#bec6e0",
+            "secondary": "#0051d5",
+            "secondary_container": "#316bf3",
+            "secondary_fixed": "#dbe1ff",
+            "secondary_fixed_dim": "#b4c5ff",
+            "surface": "#fcf8fa",
+            "surface_bright": "#fcf8fa",
+            "surface_container": "#f0edef",
+            "surface_container_high": "#eae7e9",
+            "surface_container_highest": "#e4e2e4",
+            "surface_container_low": "#f6f3f5",
+            "surface_container_lowest": "#ffffff",
+            "surface_dim": "#dcd9db",
+            "surface_tint": "#565e74",
+            "surface_variant": "#e4e2e4",
+            "tertiary": "#000000",
+            "tertiary_container": "#271901",
+            "tertiary_fixed": "#fcdeb5",
+            "tertiary_fixed_dim": "#dec29a"
+          },
+          "designMd": "---\nname: ReFinance Design System\ncolors:\n  surface: '#fcf8fa'\n  surface-dim: '#dcd9db'\n  surface-bright: '#fcf8fa'\n  surface-container-lowest: '#ffffff'\n  surface-container-low: '#f6f3f5'\n  surface-container: '#f0edef'\n  surface-container-high: '#eae7e9'\n  surface-container-highest: '#e4e2e4'\n  on-surface: '#1b1b1d'\n  on-surface-variant: '#45464d'\n  inverse-surface: '#303032'\n  inverse-on-surface: '#f3f0f2'\n  outline: '#76777d'\n  outline-variant: '#c6c6cd'\n  surface-tint: '#565e74'\n  primary: '#000000'\n  on-primary: '#ffffff'\n  primary-container: '#131b2e'\n  on-primary-container: '#7c839b'\n  inverse-primary: '#bec6e0'\n  secondary: '#0051d5'\n  on-secondary: '#ffffff'\n  secondary-container: '#316bf3'\n  on-secondary-container: '#fefcff'\n  tertiary: '#000000'\n  on-tertiary: '#ffffff'\n  tertiary-container: '#271901'\n  on-tertiary-container: '#98805d'\n  error: '#ba1a1a'\n  on-error: '#ffffff'\n  error-container: '#ffdad6'\n  on-error-container: '#93000a'\n  primary-fixed: '#dae2fd'\n  primary-fixed-dim: '#bec6e0'\n  on-primary-fixed: '#131b2e'\n  on-primary-fixed-variant: '#3f465c'\n  secondary-fixed: '#dbe1ff'\n  secondary-fixed-dim: '#b4c5ff'\n  on-secondary-fixed: '#00174b'\n  on-secondary-fixed-variant: '#003ea8'\n  tertiary-fixed: '#fcdeb5'\n  tertiary-fixed-dim: '#dec29a'\n  on-tertiary-fixed: '#271901'\n  on-tertiary-fixed-variant: '#574425'\n  background: '#fcf8fa'\n  on-background: '#1b1b1d'\n  surface-variant: '#e4e2e4'\ntypography:\n  display-lg:\n    fontFamily: Manrope\n    fontSize: 48px\n    fontWeight: '700'\n    lineHeight: '1.2'\n    letterSpacing: -0.02em\n  display-lg-mobile:\n    fontFamily: Manrope\n    fontSize: 36px\n    fontWeight: '700'\n    lineHeight: '1.2'\n    letterSpacing: -0.02em\n  headline-md:\n    fontFamily: Manrope\n    fontSize: 24px\n    fontWeight: '600'\n    lineHeight: '1.4'\n  headline-sm:\n    fontFamily: Manrope\n    fontSize: 20px\n    fontWeight: '600'\n    lineHeight: '1.4'\n  body-lg:\n    fontFamily: Manrope\n    fontSize: 18px\n    fontWeight: '400'\n    lineHeight: '1.6'\n  body-md:\n    fontFamily: Manrope\n    fontSize: 16px\n    fontWeight: '400'\n    lineHeight: '1.6'\n  body-sm:\n    fontFamily: Manrope\n    fontSize: 14px\n    fontWeight: '400'\n    lineHeight: '1.5'\n  label-md:\n    fontFamily: Manrope\n    fontSize: 14px\n    fontWeight: '600'\n    lineHeight: '1'\n    letterSpacing: 0.01em\n  label-sm:\n    fontFamily: Manrope\n    fontSize: 12px\n    fontWeight: '500'\n    lineHeight: '1'\nrounded:\n  sm: 0.25rem\n  DEFAULT: 0.5rem\n  md: 0.75rem\n  lg: 1rem\n  xl: 1.5rem\n  full: 9999px\nspacing:\n  base: 4px\n  xs: 4px\n  sm: 8px\n  md: 16px\n  lg: 24px\n  xl: 32px\n  2xl: 48px\n  container-margin-mobile: 16px\n  container-margin-desktop: 80px\n  gutter: 16px\n---\n\n## Brand & Style\nAplikasi ini dirancang dengan pendekatan **Minimalisme Modern** yang mengutamakan kejelasan data dan kepercayaan pengguna. Sebagai asisten keuangan pribadi, antarmuka harus terasa tenang, terorganisir, dan presisi. Fokus utama adalah pada visualisasi data (grafik dan angka) yang bersih tanpa gangguan elemen dekoratif yang berlebihan.\n\nTarget audiens adalah individu yang menghargai efisiensi dan transparansi dalam pengelolaan dana. Respon emosional yang ingin dicapai adalah rasa kendali (control) dan keamanan (security). Penggunaan ruang putih (whitespace) yang luas membantu pengguna fokus pada metrik keuangan yang paling krusial.\n\n## Colors\nSistem warna menggunakan palet fungsional yang membedakan antara status keuangan dengan jelas. Warna biru (`Accent`) digunakan untuk elemen interaktif dan penekanan, sementara Hijau (`Income`) dan Merah (`Expense`) digunakan secara ketat untuk indikator arus kas.\n\nDalam **Mode Terang**, latar belakang yang sangat cerah memberikan kesan bersih. Dalam **Mode Gelap**, kontras dijaga tetap tinggi untuk memastikan keterbacaan grafik pada malam hari. Warna teks sekunder memiliki kontras yang cukup untuk aksesibilitas namun tetap memberikan hierarki visual yang jelas terhadap teks utama.\n\n## Typography\n**Manrope** dipilih karena sifatnya yang modern dan geometris namun tetap sangat terbaca untuk angkaâ€”elemen terpenting dalam aplikasi finansial.\n\n- **Display & Headlines:** Digunakan untuk saldo utama dan judul dashboard. Menggunakan bobot *Bold* (700) atau *SemiBold* (600) untuk otoritas visual.\n- **Body:** Menggunakan bobot *Regular* (400) untuk deskripsi transaksi dan catatan.\n- **Labels:** Digunakan untuk kategori, metadata, dan teks pada tombol. \n- **Data Numerik:** Pastikan penggunaan *tabular figures* jika tersedia dalam font agar angka pada laporan bulanan sejajar secara vertikal.\n\n## Layout & Spacing\nSistem ini menggunakan **Fixed Grid** pada desktop (12 kolom) untuk menjaga fokus di tengah layar, dan **Fluid Grid** pada mobile (4 kolom).\n\n- **Sistem Grid:** Layout desktop memiliki lebar kontainer maksimal 1200px.\n- **Rhythm:** Gunakan kelipatan 8px untuk margin antar elemen besar, dan 4px untuk elemen mikro di dalam komponen.\n- **Data Density:** Berikan padding yang cukup luas pada card (minimal 24px) agar grafik tidak terasa sesak.\n- **Mobile Reflow:** Pada perangkat mobile, elemen dashboard yang tadinya bersisian (side-by-side) akan bertumpuk secara vertikal (stacked) untuk menjaga keterbacaan teks.\n\n## Elevation & Depth\nDesain ini menggunakan teknik **Low-contrast outlines** yang dikombinasikan dengan **Tonal layering** untuk menciptakan kedalaman yang halus tanpa bayangan yang berat.\n\n- **Level 0 (Background):** Menggunakan warna `#F8FAFC` (Light) atau `#020617` (Dark).\n- **Level 1 (Cards/Containers):** Permukaan utama untuk konten. Memiliki border 1px dengan warna `#E2E8F0` (Light) atau `#334155` (Dark).\n- **Shadows:** Bayangan hanya digunakan pada elemen yang dapat melayang (seperti modal atau dropdown) dengan intensitas sangat rendah: `0px 4px 12px rgba(15, 23, 42, 0.05)`.\n- **Interaction:** Saat elemen di-hover, border dapat berubah menjadi warna `Accent` secara halus untuk memberikan feedback.\n\n## Shapes\nBentuk elemen menggunakan radius menengah untuk menyeimbangkan kesan profesional dan modern.\n\n- **Cards & Modals:** Menggunakan `rounded-lg` (1rem/16px) untuk memberikan kesan wadah yang kokoh.\n- **Buttons & Inputs:** Menggunakan standar `rounded` (0.5rem/8px).\n- **Chips/Badges:** Menggunakan `rounded-xl` (1.5rem/24px) untuk membedakan kategori dari elemen interaktif utama.\n- **Charts:** Garis pada grafik (line charts) harus memiliki kurva halus (*smooth bezier*), bukan sudut tajam, untuk mendukung estetika minimalis.\n\n## Components\nSetiap komponen dirancang untuk efisiensi input dan kejelasan output data.\n\n- **Buttons:**\n  - *Primary:* Latar belakang solid (`Text Primary` di Light, `Accent` di Dark), tanpa border.\n  - *Secondary:* Ghost style dengan border 1px dan teks warna `Accent`.\n- **Input Fields:** Latar belakang putih (Light) atau gelap (Dark) dengan border tipis. Label diletakkan di atas input, bukan sebagai placeholder, untuk aksesibilitas.\n- **Financial Cards:** Kartu ringkasan saldo harus memiliki kontras tinggi. Gunakan ukuran font `headline-md` untuk angka saldo.\n- **Transaction List:** Baris transaksi memiliki tinggi minimal 64px dengan ikon kategori di sisi kiri. Indikator nominal menggunakan warna `Income` atau `Expense`.\n- **Progress Bars:** Digunakan untuk pelacakan anggaran (budgeting). Gunakan warna `Accent` untuk progres normal dan beralih ke `Expense` jika anggaran terlampaui.\n- **Chips:** Digunakan untuk filter waktu (Harian, Mingguan, Bulanan). Chip yang aktif menggunakan warna latar belakang `Accent` dengan teks putih.",
+          "colorVariant": "FIDELITY",
+          "overridePrimaryColor": "#0f172a",
+          "overrideSecondaryColor": "#2563eb",
+          "spacingScale": 2,
+          "typography": {
+            "body-lg": {
+              "fontFamily": "Manrope",
+              "fontSize": "18px",
+              "fontWeight": "400",
+              "lineHeight": "1.6"
+            },
+            "body-md": {
+              "fontFamily": "Manrope",
+              "fontSize": "16px",
+              "fontWeight": "400",
+              "lineHeight": "1.6"
+            },
+            "body-sm": {
+              "fontFamily": "Manrope",
+              "fontSize": "14px",
+              "fontWeight": "400",
+              "lineHeight": "1.5"
+            },
+            "display-lg": {
+              "fontFamily": "Manrope",
+              "fontSize": "48px",
+              "fontWeight": "700",
+              "lineHeight": "1.2",
+              "letterSpacing": "-0.02em"
+            },
+            "display-lg-mobile": {
+              "fontFamily": "Manrope",
+              "fontSize": "36px",
+              "fontWeight": "700",
+              "lineHeight": "1.2",
+              "letterSpacing": "-0.02em"
+            },
+            "headline-md": {
+              "fontFamily": "Manrope",
+              "fontSize": "24px",
+              "fontWeight": "600",
+              "lineHeight": "1.4"
+            },
+            "headline-sm": {
+              "fontFamily": "Manrope",
+              "fontSize": "20px",
+              "fontWeight": "600",
+              "lineHeight": "1.4"
+            },
+            "label-md": {
+              "fontFamily": "Manrope",
+              "fontSize": "14px",
+              "fontWeight": "600",
+              "lineHeight": "1",
+              "letterSpacing": "0.01em"
+            },
+            "label-sm": {
+              "fontFamily": "Manrope",
+              "fontSize": "12px",
+              "fontWeight": "500",
+              "lineHeight": "1"
+            }
+          },
+          "spacing": {
+            "2xl": "48px",
+            "base": "4px",
+            "container-margin-desktop": "80px",
+            "container-margin-mobile": "16px",
+            "gutter": "16px",
+            "lg": "24px",
+            "md": "16px",
+            "sm": "8px",
+            "xl": "32px",
+            "xs": "4px"
+          },
+          "headlineFontFamily": "Manrope",
+          "bodyFontFamily": "Manrope",
+          "labelFontFamily": "Manrope"
+        }
+      },
+      "version": "1"
+    }
+  ]
+}

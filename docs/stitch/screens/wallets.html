@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ReFinance - Wallets</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#fefcff",
+                        "inverse-on-surface": "#f3f0f2",
+                        "on-surface-variant": "#45464d",
+                        "on-primary-container": "#7c839b",
+                        "tertiary": "#000000",
+                        "surface-container-low": "#f6f3f5",
+                        "on-secondary-fixed-variant": "#003ea8",
+                        "on-tertiary-fixed": "#271901",
+                        "on-tertiary-fixed-variant": "#574425",
+                        "surface-container-highest": "#e4e2e4",
+                        "secondary-fixed": "#dbe1ff",
+                        "primary-fixed": "#dae2fd",
+                        "surface-container-high": "#eae7e9",
+                        "surface": "#fcf8fa",
+                        "background": "#fcf8fa",
+                        "on-primary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#131b2e",
+                        "on-tertiary-container": "#98805d",
+                        "on-secondary-fixed": "#00174b",
+                        "secondary": "#0051d5",
+                        "secondary-container": "#316bf3",
+                        "tertiary-container": "#271901",
+                        "surface-bright": "#fcf8fa",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "primary-fixed-dim": "#bec6e0",
+                        "primary-container": "#131b2e",
+                        "on-surface": "#1b1b1d",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#1b1b1d",
+                        "tertiary-fixed-dim": "#dec29a",
+                        "outline-variant": "#c6c6cd",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#fcdeb5",
+                        "error": "#ba1a1a",
+                        "outline": "#76777d",
+                        "surface-container": "#f0edef",
+                        "surface-variant": "#e4e2e4",
+                        "inverse-surface": "#303032",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "surface-dim": "#dcd9db",
+                        "surface-tint": "#565e74",
+                        "inverse-primary": "#bec6e0",
+                        "primary": "#000000",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "base": "4px",
+                        "container-margin-desktop": "80px",
+                        "sm": "8px",
+                        "container-margin-mobile": "16px",
+                        "2xl": "48px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "display-lg-mobile": ["Manrope"],
+                        "body-sm": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "label-sm": ["Manrope"],
+                        "headline-sm": ["Manrope"],
+                        "headline-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg-mobile": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "fontWeight": "500" }],
+                        "headline-sm": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col md:flex-row">
+<!-- TopNavBar (Mobile Only) -->
+<header class="md:hidden bg-surface dark:bg-surface-dim fixed top-0 left-0 w-full z-50 flex justify-between items-center px-container-margin-mobile h-16 border-b border-outline-variant dark:border-outline">
+<div class="font-headline-md text-headline-md-mobile text-primary dark:text-inverse-primary font-bold">ReFinance</div>
+<div class="flex items-center space-x-sm text-primary dark:text-inverse-primary">
+<button class="p-2 hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar (Desktop Only) -->
+<nav class="hidden md:flex flex-col py-lg space-y-sm bg-surface dark:bg-surface-dim h-screen w-64 fixed left-0 top-0 border-r border-outline-variant dark:border-outline flat no shadows z-40 overflow-y-auto">
+<div class="px-lg pb-lg">
+<div class="flex items-center space-x-md mb-xl">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-headline-sm text-headline-sm font-bold">PA</div>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">Personal Assistant</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Managing Wealth</div>
+</div>
+</div>
+<div class="space-y-xs font-label-md text-label-md">
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="dashboard">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="receipt_long">receipt_long</span>
+                    Transaksi
+                </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="category">category</span>
+                    Kategori
+                </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="account_balance_wallet">account_balance_wallet</span>
+                    Budget
+                </a>
+<a class="flex items-center px-md py-sm rounded-lg bg-secondary-fixed/20 text-secondary dark:text-secondary-fixed font-bold border-r-4 border-secondary hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="account_balance">account_balance</span>
+                    Wallets
+                </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="track_changes">track_changes</span>
+                    Goals
+                </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="assessment">assessment</span>
+                    Laporan
+                </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="trending_up">trending_up</span>
+                    Market
+                </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="settings">settings</span>
+                    Pengaturan
+                </a>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 mt-16 md:mt-0 md:ml-64 p-container-margin-mobile md:p-container-margin-desktop bg-background pb-24 md:pb-container-margin-desktop">
+<div class="flex justify-between items-end mb-xl">
+<div>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-background mb-xs">Wallets</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Kelola semua sumber dana Anda di satu tempat.</p>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-lg py-md rounded-full hover:bg-primary/90 transition-colors flex items-center shadow-sm">
+<span class="material-symbols-outlined mr-sm text-[20px]" data-icon="add">add</span>
+                Tambah Wallet
+            </button>
+</div>
+<!-- Wallets Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
+<!-- Card 1: Tunai -->
+<div class="bg-surface rounded-xl border border-outline-variant p-lg hover:border-secondary transition-colors group relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-fixed/30 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start mb-lg relative z-10">
+<div class="flex items-center space-x-sm">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined fill" data-icon="payments">payments</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Tunai</span>
+</div>
+<div class="flex space-x-xs opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1 rounded-full text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1 rounded-full text-on-surface-variant hover:bg-error-container hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<div class="relative z-10">
+<div class="font-body-sm text-body-sm text-on-surface-variant mb-xs">Saldo Saat Ini</div>
+<div class="font-headline-md text-headline-md text-on-surface">Rp 2.450.000</div>
+</div>
+</div>
+<!-- Card 2: Bank BCA -->
+<div class="bg-surface rounded-xl border border-outline-variant p-lg hover:border-secondary transition-colors group relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-fixed/30 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start mb-lg relative z-10">
+<div class="flex items-center space-x-sm">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined fill" data-icon="account_balance">account_balance</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Bank BCA</span>
+</div>
+<div class="flex space-x-xs opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1 rounded-full text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1 rounded-full text-on-surface-variant hover:bg-error-container hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<div class="relative z-10">
+<div class="font-body-sm text-body-sm text-on-surface-variant mb-xs">Saldo Saat Ini</div>
+<div class="font-headline-md text-headline-md text-on-surface">Rp 15.750.000</div>
+</div>
+</div>
+<!-- Card 3: GoPay -->
+<div class="bg-surface rounded-xl border border-outline-variant p-lg hover:border-secondary transition-colors group relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-tertiary-fixed/30 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start mb-lg relative z-10">
+<div class="flex items-center space-x-sm">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined fill" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">E-Wallet GoPay</span>
+</div>
+<div class="flex space-x-xs opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1 rounded-full text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1 rounded-full text-on-surface-variant hover:bg-error-container hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<div class="relative z-10">
+<div class="font-body-sm text-body-sm text-on-surface-variant mb-xs">Saldo Saat Ini</div>
+<div class="font-headline-md text-headline-md text-on-surface">Rp 850.000</div>
+</div>
+</div>
+<!-- Add New Wallet Card (Ghost Style) -->
+<div class="bg-surface-container-lowest border-2 border-dashed border-outline-variant rounded-xl p-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-surface-container-low transition-all min-h-[160px] group">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant mb-sm group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[24px]" data-icon="add">add</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant group-hover:text-primary transition-colors">Tambah Wallet Baru</span>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 bg-surface dark:bg-surface-dim px-4 pb-safe border-t border-outline-variant dark:border-outline shadow-lg rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-secondary dark:hover:text-secondary-fixed active:scale-90 duration-150 w-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm-mobile">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-secondary dark:hover:text-secondary-fixed active:scale-90 duration-150 w-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="list_alt">list_alt</span>
+<span class="font-label-sm text-label-sm-mobile">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-secondary dark:hover:text-secondary-fixed active:scale-90 duration-150 w-16 -mt-6" href="#">
+<div class="bg-primary text-on-primary rounded-full p-2 shadow-lg">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</div>
+<span class="font-label-sm text-label-sm-mobile mt-1">Add</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-secondary dark:hover:text-secondary-fixed active:scale-90 duration-150 w-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="stars">stars</span>
+<span class="font-label-sm text-label-sm-mobile">Goals</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-secondary dark:hover:text-secondary-fixed active:scale-90 duration-150 w-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm-mobile">Settings</span>
+</a>
+</nav>
+</body></html>

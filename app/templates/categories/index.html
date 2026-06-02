@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Kategori{% endblock %}
+{% block page_title %}Kategori{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Kategori</h2>
+    <p class="page-subtitle">Kelola kategori pemasukan dan pengeluaran</p>
+  </div>
+  <button class="btn btn-primary" onclick="bukaModalTambah()">
+    <span class="material-symbols-outlined">add</span>
+    Tambah Kategori
+  </button>
+</div>
+
+<!-- Pesan error/sukses -->
+<div id="pesan-kategori"></div>
+
+<!-- ===== Tabs ===== -->
+<div class="card">
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab-btn active" data-panel="pengeluaran">
+        <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">trending_down</span>
+        Pengeluaran
+      </button>
+      <button class="tab-btn" data-panel="pemasukan">
+        <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">trending_up</span>
+        Pemasukan
+      </button>
+    </div>
+
+    <!-- Panel Pengeluaran -->
+    <div class="tab-panel active" id="panel-pengeluaran">
+      <ul id="list-pengeluaran">
+        <li class="text-muted text-sm" style="padding:1rem;">Memuat kategori...</li>
+      </ul>
+    </div>
+
+    <!-- Panel Pemasukan -->
+    <div class="tab-panel" id="panel-pemasukan">
+      <ul id="list-pemasukan">
+        <li class="text-muted text-sm" style="padding:1rem;">Memuat kategori...</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== Modal Tambah / Edit Kategori ===== -->
+<div class="modal-overlay" id="modal-tambah-kategori">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-kategori-judul">Tambah Kategori</h3>
+      <button class="modal-close" onclick="closeModal('modal-tambah-kategori')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- Pesan error modal -->
+      <div id="error-modal-kategori" style="display:none;" class="alert alert-danger mb-3"></div>
+
+      <form id="form-kategori">
+        <input type="hidden" id="kat-id" value="">
+
+        <div class="form-group">
+          <label class="form-label">Tipe Kategori</label>
+          <div style="display: flex; gap: 0.75rem;">
+            <label style="display: flex; align-items: center; gap: 0.375rem; cursor: pointer;">
+              <input type="radio" name="kat-tipe" value="expense" id="kat-tipe-expense" checked> Pengeluaran
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.375rem; cursor: pointer;">
+              <input type="radio" name="kat-tipe" value="income" id="kat-tipe-income"> Pemasukan
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="kat-nama">Nama Kategori</label>
+          <input class="form-control" type="text" id="kat-nama" name="name"
+                 placeholder="Misal: Makanan, Transport..." required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="kat-ikon">Ikon (Material Symbols)</label>
+          <input class="form-control" type="text" id="kat-ikon" name="icon"
+                 placeholder="Misal: restaurant, directions_bus...">
+          <span class="form-hint">Nama ikon dari <a href="https://fonts.google.com/icons" target="_blank">Google Material Symbols</a></span>
+        </div>
+
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-tambah-kategori')">Batal</button>
+      <button class="btn btn-primary" id="btn-simpan-kategori" onclick="simpanKategori()">
+        <span class="material-symbols-outlined">save</span>
+        Simpan
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+/**
+ * Muat semua kategori dari API dan isi dua panel tab.
+ */
+async function muatKategori() {
+  const pesanEl = document.getElementById('pesan-kategori');
+  pesanEl.innerHTML = '';
+
+  try {
+    const semua = await apiGet('/api/categories');
+
+    const pengeluaran = semua.filter(c => c.kind === 'expense');
+    const pemasukan = semua.filter(c => c.kind === 'income');
+
+    renderDaftarKategori('list-pengeluaran', pengeluaran, 'expense');
+    renderDaftarKategori('list-pemasukan', pemasukan, 'income');
+
+  } catch (err) {
+    pesanEl.innerHTML = `
+      <div class="alert alert-danger" style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+        <span class="material-symbols-outlined">error</span>
+        <span>${err.message}</span>
+      </div>`;
+  }
+}
+
+/**
+ * Render daftar kategori ke dalam elemen <ul>.
+ * @param {string} elId - ID elemen <ul>
+ * @param {Array} daftar - array kategori dari API
+ * @param {string} kind - 'income' atau 'expense'
+ */
+function renderDaftarKategori(elId, daftar, kind) {
+  const ul = document.getElementById(elId);
+  if (!ul) return;
+
+  if (!daftar || daftar.length === 0) {
+    ul.innerHTML = `<li class="text-muted text-sm" style="padding:1rem;">Belum ada kategori ${kind === 'income' ? 'pemasukan' : 'pengeluaran'}.</li>`;
+    return;
+  }
+
+  const ikonKelas = kind === 'income' ? 'icon-pos' : 'icon-neg';
+  ul.innerHTML = daftar.map(c => {
+    const ikonNama = c.icon || (kind === 'income' ? 'payments' : 'receipt_long');
+    return `
+      <li class="list-item">
+        <div class="list-item-left">
+          <div class="list-item-icon ${ikonKelas}">
+            <span class="material-symbols-outlined">${escHtml(ikonNama)}</span>
+          </div>
+          <div>
+            <div class="list-item-name">${escHtml(c.name)}</div>
+            <div class="list-item-sub">${kind === 'income' ? 'Pemasukan' : 'Pengeluaran'}</div>
+          </div>
+        </div>
+        <div class="list-item-actions">
+          <button class="btn-icon" onclick="editKategori(${c.id})" title="Edit">
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+          <button class="btn-icon" onclick="hapusKategori(${c.id})" title="Hapus" style="color: var(--neg);">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </li>`;
+  }).join('');
+}
+
+/**
+ * Buka modal dalam mode tambah.
+ */
+function bukaModalTambah() {
+  document.getElementById('modal-kategori-judul').textContent = 'Tambah Kategori';
+  document.getElementById('kat-id').value = '';
+  document.getElementById('form-kategori').reset();
+  document.getElementById('error-modal-kategori').style.display = 'none';
+  document.getElementById('kat-tipe-expense').checked = true;
+  openModal('modal-tambah-kategori');
+}
+
+/**
+ * Isi form modal dengan data kategori yang akan diedit.
+ * @param {number} id
+ */
+async function editKategori(id) {
+  try {
+    const semua = await apiGet('/api/categories');
+    const kat = semua.find(c => c.id === id);
+    if (!kat) { alert('Kategori tidak ditemukan.'); return; }
+
+    document.getElementById('modal-kategori-judul').textContent = 'Edit Kategori';
+    document.getElementById('kat-id').value = kat.id;
+    document.getElementById('kat-nama').value = kat.name;
+    document.getElementById('kat-ikon').value = kat.icon || '';
+    document.getElementById(kat.kind === 'income' ? 'kat-tipe-income' : 'kat-tipe-expense').checked = true;
+    document.getElementById('error-modal-kategori').style.display = 'none';
+    openModal('modal-tambah-kategori');
+
+  } catch (err) {
+    alert('Gagal memuat data: ' + err.message);
+  }
+}
+
+/**
+ * Hapus kategori setelah konfirmasi.
+ * @param {number} id
+ */
+async function hapusKategori(id) {
+  if (!confirm('Hapus kategori ini? Transaksi terkait akan kehilangan kategorinya.')) return;
+
+  try {
+    await apiDelete(`/api/categories/${id}`);
+    await muatKategori();
+  } catch (err) {
+    alert('Gagal menghapus: ' + err.message);
+  }
+}
+
+/**
+ * Simpan kategori (create atau update).
+ */
+async function simpanKategori() {
+  const errEl = document.getElementById('error-modal-kategori');
+  errEl.style.display = 'none';
+
+  const id = document.getElementById('kat-id').value;
+  const nama = document.getElementById('kat-nama').value.trim();
+  const ikon = document.getElementById('kat-ikon').value.trim();
+  const kind = document.querySelector('input[name="kat-tipe"]:checked')?.value;
+
+  if (!nama) {
+    errEl.textContent = 'Nama kategori wajib diisi.';
+    errEl.style.display = '';
+    return;
+  }
+
+  const payload = { name: nama, kind: kind, icon: ikon || null };
+
+  const btn = document.getElementById('btn-simpan-kategori');
+  btn.disabled = true;
+
+  try {
+    if (id) {
+      await apiPut(`/api/categories/${id}`, payload);
+    } else {
+      await apiPost('/api/categories', payload);
+    }
+    closeModal('modal-tambah-kategori');
+    await muatKategori();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/**
+ * Escape HTML.
+ */
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
+
+// Muat data saat DOM siap
+document.addEventListener('DOMContentLoaded', muatKategori);
+</script>
+{% endblock %}

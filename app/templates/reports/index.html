@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}Laporan{% endblock %}
+{% block page_title %}Laporan{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Laporan Keuangan</h2>
+    <p class="page-subtitle">Analisis tren dan komposisi keuanganmu</p>
+  </div>
+  <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+    <!-- Pemilih rentang: 30 hari / 3 bulan / 6 bulan (bukan per bulan kalender) -->
+    <div class="segmented" id="seg-rentang-laporan" role="group" aria-label="Rentang waktu laporan">
+      <button type="button" class="segmented-btn active" data-days="30">30 Hari</button>
+      <button type="button" class="segmented-btn" data-days="90">3 Bulan</button>
+      <button type="button" class="segmented-btn" data-days="180">6 Bulan</button>
+    </div>
+    <button class="btn btn-outline" onclick="eksporCSV()">
+      <span class="material-symbols-outlined">download</span>
+      Export CSV
+    </button>
+  </div>
+</div>
+
+<!-- ===== Ringkasan Periode ===== -->
+<div class="grid-3 mb-4">
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">trending_up</span>
+      Total Pemasukan
+    </div>
+    <div class="stat-card-value positive" id="stat-income">—</div>
+    <div class="stat-card-change" id="stat-income-info">30 hari terakhir</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">trending_down</span>
+      Total Pengeluaran
+    </div>
+    <div class="stat-card-value negative" id="stat-expense">—</div>
+    <div class="stat-card-change" id="stat-expense-info">30 hari terakhir</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">savings</span>
+      Net (Selisih)
+    </div>
+    <div class="stat-card-value positive" id="stat-net">—</div>
+    <div class="stat-card-change" id="stat-net-info">Tingkat tabungan</div>
+  </div>
+</div>
+
+<!-- Pesan error -->
+<div id="pesan-laporan"></div>
+
+<!-- ===== Grafik 1: Tren Pemasukan vs Pengeluaran (Line) ===== -->
+<div class="card mb-4">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Tren Pemasukan & Pengeluaran</div>
+      <div class="card-subtitle" id="subtitle-tren">Harian — 30 hari terakhir</div>
+    </div>
+  </div>
+  <div class="chart-container" style="height: 280px;">
+    <canvas id="chart-tren"></canvas>
+  </div>
+</div>
+
+<!-- ===== Grafik 2 & 3: Pie + Bar berdampingan ===== -->
+<div class="grid-2">
+
+  <!-- Grafik Pie komposisi kategori -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Komposisi Pengeluaran</div>
+        <div class="card-subtitle">Berdasarkan kategori</div>
+      </div>
+    </div>
+    <div class="chart-container" style="height: 280px;">
+      <canvas id="chart-pie-kategori"></canvas>
+    </div>
+    <div id="error-pie" style="display:none;"></div>
+  </div>
+
+  <!-- Grafik Bar perbandingan bulanan -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Perbandingan Bulanan</div>
+        <div class="card-subtitle">Pemasukan vs Pengeluaran</div>
+      </div>
+    </div>
+    <div class="chart-container" style="height: 280px;">
+      <canvas id="chart-bar-bulan"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== Tabel Kategori Teratas ===== -->
+<div class="card mt-4">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Kategori Pengeluaran Terbesar</div>
+      <div class="card-subtitle" id="subtitle-tabel-kat">30 hari terakhir</div>
+    </div>
+  </div>
+  <div id="container-tabel-kat">
+    <div class="text-muted text-sm" style="padding:1rem;">Memuat data...</div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+window._rfCharts = window._rfCharts || [];
+let chartTren = null, chartPie = null, chartBar = null;
+let rentangAktif = 30;  // hari: 30 / 90 / 180
+
+/**
+ * Teks label rentang untuk subjudul.
+ */
+function labelRentang(days) {
+  if (days >= 180) return '6 bulan terakhir';
+  if (days >= 90) return '3 bulan terakhir';
+  return '30 hari terakhir';
+}
+
+/**
+ * Inisialisasi pemilih rentang dan muat data laporan.
+ */
+async function inisialisasiHalaman() {
+  // Pasang event pada segmented control rentang (30 / 90 / 180 hari)
+  const seg = document.getElementById('seg-rentang-laporan');
+  if (seg) {
+    seg.querySelectorAll('.segmented-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        seg.querySelectorAll('.segmented-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        rentangAktif = parseInt(btn.dataset.days, 10) || 30;
+        muatSemuaLaporan();
+      });
+    });
+  }
+
+  await muatSemuaLaporan();
+}
+
+/**
+ * Muat semua data laporan secara paralel berdasarkan rentang aktif.
+ */
+async function muatSemuaLaporan() {
+  const days = rentangAktif;
+  await Promise.all([
+    muatSummary(days),
+    muatGrafikTren(days),
+    muatGrafikPie(days),
+    muatGrafikBar(),   // "Perbandingan Bulanan" tetap per bulan (6 bulan terakhir)
+  ]);
+}
+
+/**
+ * Muat ringkasan income/expense untuk rentang N hari terakhir.
+ */
+async function muatSummary(days) {
+  try {
+    const data = await apiGet(`/api/reports/summary?days=${days}`);
+    const income = data.income || 0;
+    const expense = data.expense || 0;
+    const net = income - expense;
+    const pctTabungan = income > 0 ? (net / income * 100).toFixed(1) : 0;
+    const labelR = labelRentang(days);
+
+    document.getElementById('stat-income').textContent = formatRupiah(income);
+    document.getElementById('stat-expense').textContent = formatRupiah(expense);
+    document.getElementById('stat-net').textContent = formatRupiah(net);
+    document.getElementById('stat-income-info').textContent = labelR;
+    document.getElementById('stat-expense-info').textContent = labelR;
+    document.getElementById('stat-net-info').textContent = `Tingkat tabungan: ${pctTabungan}%`;
+  } catch (err) {
+    document.getElementById('stat-income').textContent = '—';
+    document.getElementById('stat-expense').textContent = '—';
+    document.getElementById('stat-net').textContent = '—';
+  }
+}
+
+/**
+ * Muat dan render grafik tren HARIAN untuk N hari terakhir (line chart).
+ */
+async function muatGrafikTren(days) {
+  try {
+    // Gunakan fetch langsung untuk mengakses key "chart" di response
+    const resp = await fetch(`/api/reports/trend-daily?days=${days}`);
+    if (resp.status === 401) { window.location.href = '/login'; return; }
+    const json = await resp.json();
+    if (!json.ok) return;
+
+    const trend = json.chart;
+    if (!trend || !trend.labels) return;
+
+    // Perbarui subjudul kartu
+    const subEl = document.getElementById('subtitle-tren');
+    if (subEl) subEl.textContent = `Harian — ${labelRentang(days)}`;
+
+    // Destroy chart lama
+    if (chartTren) {
+      chartTren.destroy();
+      if (window._rfCharts) window._rfCharts = window._rfCharts.filter(c => c !== chartTren);
+      chartTren = null;
+    }
+
+    chartTren = initTrendChart(
+      'chart-tren',
+      trend.labels,
+      trend.income,
+      trend.expense
+    );
+    if (chartTren) window._rfCharts.push(chartTren);
+
+  } catch (err) {
+    console.error('Gagal memuat tren:', err.message);
+  }
+}
+
+/**
+ * Muat dan render grafik pie komposisi pengeluaran untuk N hari terakhir.
+ */
+async function muatGrafikPie(days) {
+  const errEl = document.getElementById('error-pie');
+  const containerTabel = document.getElementById('container-tabel-kat');
+
+  try {
+    const byKat = await apiGet(`/api/reports/by-category?days=${days}`);
+
+    if (chartPie) { chartPie.destroy(); chartPie = null; }
+
+    if (!byKat || byKat.length === 0) {
+      errEl.style.display = '';
+      errEl.innerHTML = '<div class="text-muted text-sm" style="text-align:center; padding:2rem;">Belum ada data pengeluaran untuk periode ini.</div>';
+      containerTabel.innerHTML = '<div class="text-muted text-sm" style="padding:1rem;">Belum ada data.</div>';
+      return;
+    }
+
+    errEl.style.display = 'none';
+    const labels = byKat.map(r => r.category_name);
+    const data = byKat.map(r => r.total);
+    chartPie = initCategoryPieChart('chart-pie-kategori', labels, data);
+    if (chartPie) window._rfCharts.push(chartPie);
+
+    // Render tabel kategori
+    const totalPengeluaran = data.reduce((s, v) => s + v, 0);
+    document.getElementById('subtitle-tabel-kat').textContent = labelRentang(days);
+
+    containerTabel.innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Kategori</th>
+              <th style="text-align:right;">Total</th>
+              <th style="text-align:right;">% dari Pengeluaran</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${byKat.slice(0, 10).map((r, idx) => {
+              const pct = totalPengeluaran > 0
+                ? (r.total / totalPengeluaran * 100).toFixed(1)
+                : 0;
+              const kelasB = pct > 30 ? 'badge-neg' : pct > 15 ? 'badge-warn' : 'badge-neutral';
+              return `
+                <tr>
+                  <td class="text-muted">${idx + 1}</td>
+                  <td>${escHtml(r.category_name)}</td>
+                  <td style="text-align:right;" class="fw-bold">${formatRupiah(r.total)}</td>
+                  <td style="text-align:right;">
+                    <span class="badge ${kelasB}">${pct}%</span>
+                  </td>
+                </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+
+  } catch (err) {
+    errEl.style.display = '';
+    errEl.innerHTML = `<div class="text-muted text-sm" style="padding:1rem;">${err.message}</div>`;
+  }
+}
+
+/**
+ * Muat dan render grafik bar "Perbandingan Bulanan" (tetap per bulan, 6 bulan terakhir).
+ */
+async function muatGrafikBar() {
+  try {
+    const resp = await fetch('/api/reports/trend?months=6');
+    if (resp.status === 401) { window.location.href = '/login'; return; }
+    const json = await resp.json();
+    if (!json.ok) return;
+
+    const trend = json.chart;
+    if (!trend || !trend.labels) return;
+
+    if (chartBar) { chartBar.destroy(); chartBar = null; }
+    chartBar = initComparisonBarChart(
+      'chart-bar-bulan',
+      trend.labels,
+      trend.income,
+      trend.expense
+    );
+    if (chartBar) window._rfCharts.push(chartBar);
+
+  } catch (err) {
+    console.error('Gagal memuat perbandingan bulanan:', err.message);
+  }
+}
+
+/**
+ * Unduh CSV semua transaksi.
+ */
+function eksporCSV() {
+  window.location.href = '/api/export/csv';
+}
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', inisialisasiHalaman);
+</script>
+{% endblock %}

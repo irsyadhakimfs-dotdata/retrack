@@ -1,0 +1,90 @@
+{# ===== Komponen Sidebar =====
+   Di-include dari base.html. Memakai kelas yang dikenali main.js
+   (.sidebar, .nav-item, .sidebar-overlay) agar toggle & highlight tetap jalan. #}
+<aside class="sidebar glass-panel" id="sidebar">
+
+  <!-- Logo -->
+  <a class="sidebar-logo" href="{{ url_for('dashboard_views.dashboard') }}">
+    <div class="sidebar-logo-icon">
+      <img class="logo-light app-logo-img" src="{{ url_for('static', filename='img/logo-light.png') }}" alt="ReTrack" />
+      <img class="logo-dark app-logo-img" src="{{ url_for('static', filename='img/logo-dark.png') }}" alt="ReTrack" />
+    </div>
+    <span class="sidebar-logo-text">Re<span>Track</span></span>
+  </a>
+
+  <!-- Navigasi -->
+  <nav class="sidebar-nav">
+
+    <span class="nav-section-label">Menu Utama</span>
+
+    <a class="nav-item {% if request.endpoint == 'dashboard_views.dashboard' %}active{% endif %}"
+       href="{{ url_for('dashboard_views.dashboard') }}">
+      <span class="material-symbols-outlined">dashboard</span>
+      Dashboard
+    </a>
+
+    <a class="nav-item {% if request.blueprint == 'transaction_views' %}active{% endif %}"
+       href="{{ url_for('transaction_views.transactions') }}">
+      <span class="material-symbols-outlined">receipt_long</span>
+      Transaksi
+    </a>
+
+    <a class="nav-item {% if request.blueprint == 'wallet_views' %}active{% endif %}"
+       href="{{ url_for('wallet_views.wallets') }}">
+      <span class="material-symbols-outlined">account_balance_wallet</span>
+      Dompet
+    </a>
+
+    <span class="nav-section-label">Perencanaan</span>
+
+    <a class="nav-item {% if request.blueprint == 'budget_views' %}active{% endif %}"
+       href="{{ url_for('budget_views.budgets') }}">
+      <span class="material-symbols-outlined">pie_chart</span>
+      Anggaran
+    </a>
+
+    <a class="nav-item {% if request.blueprint == 'goal_views' %}active{% endif %}"
+       href="{{ url_for('goal_views.goals') }}">
+      <span class="material-symbols-outlined">savings</span>
+      Tabungan & Goal
+    </a>
+
+    <a class="nav-item {% if request.blueprint == 'category_views' %}active{% endif %}"
+       href="{{ url_for('category_views.categories') }}">
+      <span class="material-symbols-outlined">label</span>
+      Kategori
+    </a>
+
+    <span class="nav-section-label">Analisis</span>
+
+    <a class="nav-item {% if request.blueprint == 'report_views' %}active{% endif %}"
+       href="{{ url_for('report_views.reports') }}">
+      <span class="material-symbols-outlined">bar_chart</span>
+      Laporan
+    </a>
+
+    <a class="nav-item {% if request.blueprint == 'market_views' %}active{% endif %}"
+       href="{{ url_for('market_views.market') }}">
+      <span class="material-symbols-outlined">show_chart</span>
+      Kurs & Emas
+    </a>
+
+    <a class="nav-item {% if request.blueprint == 'gold_views' %}active{% endif %}"
+       href="{{ url_for('gold_views.gold') }}">
+      <span class="material-symbols-outlined">workspace_premium</span>
+      Investasi Emas
+    </a>
+
+
+  </nav>
+
+  <!-- Footer sidebar -->
+  <div class="sidebar-footer">
+    <a class="nav-item {% if request.blueprint == 'settings_views' %}active{% endif %}"
+       href="{{ url_for('settings_views.settings') }}">
+      <span class="material-symbols-outlined">settings</span>
+      Pengaturan
+    </a>
+  </div>
+
+</aside>

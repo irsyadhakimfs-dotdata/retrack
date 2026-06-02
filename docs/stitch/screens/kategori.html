@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kategori - ReFinance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#1b1b1d",
+                      "inverse-surface": "#303032",
+                      "tertiary-fixed": "#fcdeb5",
+                      "on-tertiary-fixed": "#271901",
+                      "surface-tint": "#565e74",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed-dim": "#dec29a",
+                      "on-surface-variant": "#45464d",
+                      "tertiary-container": "#271901",
+                      "on-secondary-fixed": "#00174b",
+                      "on-tertiary-fixed-variant": "#574425",
+                      "on-secondary": "#ffffff",
+                      "background": "#fcf8fa",
+                      "primary": "#000000",
+                      "on-background": "#1b1b1d",
+                      "error-container": "#ffdad6",
+                      "primary-fixed-dim": "#bec6e0",
+                      "surface-bright": "#fcf8fa",
+                      "outline": "#76777d",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "primary-fixed": "#dae2fd",
+                      "outline-variant": "#c6c6cd",
+                      "surface-container-high": "#eae7e9",
+                      "on-secondary-fixed-variant": "#003ea8",
+                      "on-primary-fixed": "#131b2e",
+                      "surface-container": "#f0edef",
+                      "primary-container": "#131b2e",
+                      "surface-variant": "#e4e2e4",
+                      "surface-dim": "#dcd9db",
+                      "secondary-fixed-dim": "#b4c5ff",
+                      "on-primary-container": "#7c839b",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#f3f0f2",
+                      "secondary-container": "#316bf3",
+                      "surface-container-highest": "#e4e2e4",
+                      "on-error": "#ffffff",
+                      "surface": "#fcf8fa",
+                      "inverse-primary": "#bec6e0",
+                      "on-tertiary-container": "#98805d",
+                      "on-primary-fixed-variant": "#3f465c",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary": "#000000",
+                      "secondary-fixed": "#dbe1ff",
+                      "on-secondary-container": "#fefcff",
+                      "surface-container-low": "#f6f3f5",
+                      "secondary": "#0051d5"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-margin-desktop": "80px",
+                      "xl": "32px",
+                      "xs": "4px",
+                      "2xl": "48px",
+                      "sm": "8px",
+                      "base": "4px",
+                      "gutter": "16px",
+                      "lg": "24px",
+                      "md": "16px",
+                      "container-margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "label-md": ["Manrope"],
+                      "body-md": ["Manrope"],
+                      "headline-sm": ["Manrope"],
+                      "headline-md": ["Manrope"],
+                      "body-lg": ["Manrope"],
+                      "body-sm": ["Manrope"],
+                      "display-lg": ["Manrope"],
+                      "label-sm": ["Manrope"],
+                      "display-lg-mobile": ["Manrope"]
+              },
+              "fontSize": {
+                      "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "headline-sm": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-sm": ["12px", {"lineHeight": "1", "fontWeight": "500"}],
+                      "display-lg-mobile": ["36px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col md:flex-row">
+<!-- TopNavBar (Mobile) -->
+<header class="md:hidden fixed top-0 left-0 w-full z-50 flex justify-between items-center px-container-margin-mobile h-16 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline">
+<div class="font-headline-md text-headline-md text-primary dark:text-inverse-primary font-bold">ReFinance</div>
+<div class="flex gap-4">
+<button class="text-primary dark:text-inverse-primary active:scale-95 duration-150 hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-primary dark:text-inverse-primary active:scale-95 duration-150 hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden md:flex flex-col py-lg space-y-sm bg-surface dark:bg-surface-dim h-screen w-64 fixed left-0 top-0 border-r border-outline-variant dark:border-outline z-40">
+<div class="px-lg pb-lg">
+<div class="font-headline-md text-headline-md text-primary dark:text-inverse-primary font-bold mb-8">ReFinance</div>
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-lg overflow-hidden relative">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_uYiYBeDujbUVb4cWL1dvBP5lLCf-0oneC7chPEXuwyvVpWyQg1mMTmUu9hPJhtSv0Qy4sQc-vxf2tp86C-f6ENwpu4gNQJUNl2RwjNynbIN0oSxHfdw2gQnaD2TfLGxWwNVPzgXUUrp4wRsXpn9ZrXuVdPIrGXIW2Dcb5ZePOTeuD9ylZ3HJOede0BWO_WKiHqEFvjDJCRigUR9eMaBNl4Zn1PLKNxFNidStAX9oa45-lrbOdypQrXUkhxWXnKxfLxiJxOem1kQ"/>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface">Personal Assistant</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Managing Wealth</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col space-y-2 mt-4 px-sm flex-grow">
+<a class="flex items-center px-lg py-3 rounded-r-full font-label-md text-label-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="dashboard">dashboard</span>Dashboard
+            </a>
+<a class="flex items-center px-lg py-3 rounded-r-full font-label-md text-label-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="receipt_long">receipt_long</span>Transaksi
+            </a>
+<a class="flex items-center px-lg py-3 rounded-r-full font-label-md text-label-md text-secondary dark:text-secondary-fixed font-bold border-r-4 border-secondary bg-surface-container-low dark:bg-surface-container-highest active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="category" data-weight="fill">category</span>Kategori
+            </a>
+<a class="flex items-center px-lg py-3 rounded-r-full font-label-md text-label-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="account_balance_wallet">account_balance_wallet</span>Budget
+            </a>
+<a class="flex items-center px-lg py-3 rounded-r-full font-label-md text-label-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="account_balance">account_balance</span>Wallets
+            </a>
+<a class="flex items-center px-lg py-3 rounded-r-full font-label-md text-label-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="track_changes">track_changes</span>Goals
+            </a>
+<a class="flex items-center px-lg py-3 rounded-r-full font-label-md text-label-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="assessment">assessment</span>Laporan
+            </a>
+<a class="flex items-center px-lg py-3 rounded-r-full font-label-md text-label-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="trending_up">trending_up</span>Market
+            </a>
+<a class="flex items-center px-lg py-3 rounded-r-full font-label-md text-label-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all active:translate-x-1 duration-200 mt-auto" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="settings">settings</span>Pengaturan
+            </a>
+</div>
+</nav>
+<!-- BottomNavBar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 bg-surface dark:bg-surface-dim px-4 pb-safe border-t border-outline-variant dark:border-outline shadow-lg rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-secondary dark:hover:text-secondary-fixed active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm-mobile">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-secondary dark:hover:text-secondary-fixed active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="list_alt">list_alt</span>
+<span class="font-label-sm text-label-sm-mobile">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-secondary dark:hover:text-secondary-fixed active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="add_circle">add_circle</span>
+<span class="font-label-sm text-label-sm-mobile">Add</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-secondary dark:hover:text-secondary-fixed active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="stars">stars</span>
+<span class="font-label-sm text-label-sm-mobile">Goals</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-secondary dark:hover:text-secondary-fixed active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm-mobile">Settings</span>
+</a>
+</nav>
+<!-- Main Canvas -->
+<main class="flex-1 w-full md:ml-64 pt-20 md:pt-10 pb-24 md:pb-10 px-container-margin-mobile md:px-container-margin-desktop min-h-screen">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-xl gap-4">
+<div>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface">Kategori</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Kelola sumber pemasukan dan jenis pengeluaran Anda.</p>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-lg py-3 rounded-full flex items-center justify-center gap-2 hover:bg-inverse-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                Tambah Kategori
+            </button>
+</div>
+<!-- Content Area -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg md:p-xl shadow-[0px_4px_12px_rgba(15,23,42,0.05)]">
+<!-- Tabs -->
+<div class="flex border-b border-outline-variant mb-lg">
+<button class="font-label-md text-label-md px-lg py-3 text-secondary border-b-2 border-secondary relative top-[1px]">Pengeluaran</button>
+<button class="font-label-md text-label-md px-lg py-3 text-on-surface-variant hover:text-on-surface transition-colors relative top-[1px]">Pemasukan</button>
+</div>
+<!-- Category Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Category Item 1 -->
+<div class="group flex items-center justify-between p-md border border-outline-variant rounded-lg hover:border-secondary hover:shadow-[0px_4px_12px_rgba(15,23,42,0.05)] transition-all bg-surface">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-error-container text-on-error-container flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Makan &amp; Minum</span>
+</div>
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="text-on-surface-variant hover:text-error p-1 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Category Item 2 -->
+<div class="group flex items-center justify-between p-md border border-outline-variant rounded-lg hover:border-secondary hover:shadow-[0px_4px_12px_rgba(15,23,42,0.05)] transition-all bg-surface">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="directions_car">directions_car</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Transportasi</span>
+</div>
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="text-on-surface-variant hover:text-error p-1 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Category Item 3 -->
+<div class="group flex items-center justify-between p-md border border-outline-variant rounded-lg hover:border-secondary hover:shadow-[0px_4px_12px_rgba(15,23,42,0.05)] transition-all bg-surface">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="home_work">home_work</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Tempat Tinggal</span>
+</div>
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="text-on-surface-variant hover:text-error p-1 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Category Item 4 -->
+<div class="group flex items-center justify-between p-md border border-outline-variant rounded-lg hover:border-secondary hover:shadow-[0px_4px_12px_rgba(15,23,42,0.05)] transition-all bg-surface">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Belanja</span>
+</div>
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="text-on-surface-variant hover:text-error p-1 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Category Item 5 -->
+<div class="group flex items-center justify-between p-md border border-outline-variant rounded-lg hover:border-secondary hover:shadow-[0px_4px_12px_rgba(15,23,42,0.05)] transition-all bg-surface">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-variant text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="more_horiz">more_horiz</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Lain-lain</span>
+</div>
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="text-on-surface-variant hover:text-error p-1 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,760 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title" id="salam-nama">Halo! </h2>
+    <p class="page-subtitle" id="subtitel-bulan">Memuat ringkasan keuangan...</p>
+  </div>
+</div>
+
+<!-- ===== Kartu Statistik Utama ===== -->
+<div class="grid-4 mb-4">
+
+  <!-- Saldo Total -->
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">account_balance_wallet</span>
+      Saldo Total
+    </div>
+    <div class="stat-card-value" id="stat-saldo">—</div>
+    <div class="stat-card-change" id="stat-saldo-info">Memuat...</div>
+  </div>
+
+  <!-- Pemasukan Bulan Ini -->
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">trending_up</span>
+      Pemasukan
+    </div>
+    <div class="stat-card-value positive" id="stat-income">—</div>
+    <div class="stat-card-change" id="stat-income-info">30 hari terakhir</div>
+  </div>
+
+  <!-- Pengeluaran Bulan Ini -->
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">trending_down</span>
+      Pengeluaran
+    </div>
+    <div class="stat-card-value negative" id="stat-expense">—</div>
+    <div class="stat-card-change" id="stat-expense-info">30 hari terakhir</div>
+  </div>
+
+  <!-- Tabungan Bulan Ini -->
+  <div class="stat-card">
+    <div class="stat-card-label">
+      <span class="material-symbols-outlined">savings</span>
+      Net Saldo
+    </div>
+    <div class="stat-card-value positive" id="stat-net">—</div>
+    <div class="stat-card-change" id="stat-net-info">Selisih 30 hari terakhir</div>
+  </div>
+
+</div>
+
+<!-- ===== Linechart Kurs USD/IDR + Harga Emas (Tailwind + glassmorphism + Alpine) ===== -->
+<div class="grid-2 mb-4">
+
+  <!-- Kurs USD/IDR -->
+  <div class="glass-card p-6 animate-in" x-cloak
+       x-data="kursDashboard()" x-init="muat()">
+    <div class="flex items-start justify-between gap-4 mb-4 flex-wrap">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined floaty" style="color: var(--primary);">currency_exchange</span>
+          <h3 class="text-base font-bold" style="color: var(--text);">Kurs USD / IDR</h3>
+        </div>
+        <p class="text-sm mt-0.5" style="color: var(--text-2);">Pergerakan 2 bulan terakhir</p>
+      </div>
+      <div class="text-right">
+        <div class="text-2xl font-extrabold leading-none" style="color: var(--text);"
+             x-text="loading ? 'Memuat…' : rateLabel"></div>
+        <div class="text-xs font-bold mt-1"
+             x-show="!loading && change !== null"
+             :style="naik ? 'color: var(--neg)' : 'color: var(--pos)'"
+             x-text="changeLabel"></div>
+        <div class="text-xs mt-1" style="color: var(--text-2);"
+             x-show="updatedLabel" x-text="updatedLabel"></div>
+      </div>
+    </div>
+
+    <!-- Canvas grafik -->
+    <div class="relative" style="height: 200px;" x-show="punyaGrafik">
+      <canvas id="chart-kurs-dash"></canvas>
+    </div>
+
+    <!-- Fallback bila data kurang -->
+    <div x-show="!punyaGrafik && !loading"
+         class="flex flex-col items-center justify-center gap-1 py-8"
+         style="color: var(--text-2); display: none;">
+      <span class="material-symbols-outlined" style="font-size: 2rem;">wifi_off</span>
+      <span class="text-sm">Grafik kurs belum tersedia — coba lagi nanti.</span>
+    </div>
+  </div>
+
+  <!-- Harga Emas per gram -->
+  <div class="glass-card p-6 animate-in" x-cloak
+       x-data="emasDashboard()" x-init="muat()">
+    <div class="flex items-start justify-between gap-4 mb-4 flex-wrap">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined floaty" style="color: #D97706;">workspace_premium</span>
+          <h3 class="text-base font-bold" style="color: var(--text);">Harga Emas / gram</h3>
+        </div>
+        <p class="text-sm mt-0.5" style="color: var(--text-2);">Pergerakan 2 bulan terakhir</p>
+      </div>
+      <div class="text-right">
+        <div class="text-2xl font-extrabold leading-none" style="color: var(--text);"
+             x-text="loading ? 'Memuat…' : rateLabel"></div>
+        <div class="text-xs font-bold mt-1"
+             x-show="!loading && change !== null"
+             :style="naik ? 'color: var(--pos)' : 'color: var(--neg)'"
+             x-text="changeLabel"></div>
+        <div class="text-xs mt-1" style="color: var(--text-2);"
+             x-show="updatedLabel" x-text="updatedLabel"></div>
+      </div>
+    </div>
+
+    <div class="relative" style="height: 200px;" x-show="punyaGrafik">
+      <canvas id="chart-emas-dash"></canvas>
+    </div>
+
+    <div x-show="!punyaGrafik && !loading"
+         class="flex flex-col items-center justify-center gap-1 py-8"
+         style="color: var(--text-2); display: none;">
+      <span class="material-symbols-outlined" style="font-size: 2rem;">wifi_off</span>
+      <span class="text-sm">Grafik emas belum tersedia — coba lagi nanti.</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== Insight Erosi Nilai Pemasukan ===== -->
+<div class="card mb-4" id="card-erosi" style="display:none;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Erosi Nilai Pemasukan</div>
+      <div class="card-subtitle" id="erosi-subtitle">Daya beli pemasukan terhadap USD</div>
+    </div>
+    <a href="{{ url_for('market_views.market') }}" class="btn btn-outline btn-sm">
+      <span class="material-symbols-outlined">help</span>
+      Apa ini?
+    </a>
+  </div>
+  <div class="grid-3" id="erosi-konten">
+    <div class="text-muted text-sm">Memuat erosi…</div>
+  </div>
+</div>
+
+<!-- ===== Baris Tengah: Grafik + Budget ===== -->
+<div class="grid-2 mb-4" style="grid-template-columns: 3fr 2fr;">
+
+  <!-- Grafik Pengeluaran / Tren -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Tren Keuangan</div>
+        <div class="card-subtitle" id="subtitle-tren-dash">Harian — 30 hari terakhir</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+        <!-- Pemilih rentang: 30 hari / 3 bulan / 6 bulan -->
+        <div class="segmented" id="seg-tren-dash" role="group" aria-label="Rentang waktu tren">
+          <button type="button" class="segmented-btn active" data-days="30">30 Hari</button>
+          <button type="button" class="segmented-btn" data-days="90">3 Bulan</button>
+          <button type="button" class="segmented-btn" data-days="180">6 Bulan</button>
+        </div>
+        <a href="{{ url_for('report_views.reports') }}" class="btn btn-outline btn-sm">
+          <span class="material-symbols-outlined">open_in_new</span>
+          Lihat Laporan
+        </a>
+      </div>
+    </div>
+    <div class="chart-container" style="height: 220px;">
+      <canvas id="chart-weekly"></canvas>
+    </div>
+    <div id="chart-error" style="display:none;"></div>
+  </div>
+
+  <!-- Progress Budget -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Anggaran Bulan Ini</div>
+        <div class="card-subtitle">Progress penggunaan</div>
+      </div>
+      <a href="{{ url_for('budget_views.budgets') }}" class="btn btn-outline btn-sm">
+        Kelola
+      </a>
+    </div>
+
+    <div id="container-budget" style="display: flex; flex-direction: column; gap: 1.25rem;">
+      <div class="text-muted text-sm">Memuat anggaran...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== Baris Bawah: Goal + Transaksi Terbaru ===== -->
+<div class="grid-2">
+
+  <!-- Goal Tabungan -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Goal Tabungan</div>
+        <div class="card-subtitle">Progress menabung</div>
+      </div>
+      <a href="{{ url_for('goal_views.goals') }}" class="btn btn-outline btn-sm">
+        Semua Goal
+      </a>
+    </div>
+
+    <div id="container-goals" style="display: flex; flex-direction: column; gap: 1rem;">
+      <div class="text-muted text-sm">Memuat goal...</div>
+    </div>
+  </div>
+
+  <!-- Transaksi Terbaru -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Transaksi Terbaru</div>
+        <div class="card-subtitle">5 transaksi terakhir</div>
+      </div>
+      <a href="{{ url_for('transaction_views.transactions') }}" class="btn btn-outline btn-sm">
+        Semua
+      </a>
+    </div>
+
+    <div id="container-transaksi" style="display: flex; flex-direction: column; gap: 0;">
+      <div class="text-muted text-sm">Memuat transaksi...</div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ===== Variabel global untuk chart =====
+window._rfCharts = window._rfCharts || [];
+let chartTren = null;
+
+// ===== Nama bulan dalam Bahasa Indonesia =====
+const NAMA_BULAN = [
+  '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+
+/**
+ * Muat semua data dashboard dari API secara paralel.
+ */
+async function muatDashboard() {
+  const now = new Date();
+  const bulan = now.getMonth() + 1;
+  const tahun = now.getFullYear();
+
+  // Perbarui subtitle → sekarang berbasis 30 hari terakhir (bukan bulan kalender)
+  const elSubtitel = document.getElementById('subtitel-bulan');
+  if (elSubtitel) {
+    elSubtitel.textContent = 'Ringkasan 30 hari terakhir';
+  }
+
+  // Aktifkan pemilih rentang grafik tren
+  pasangSegmentedTren();
+
+  // Muat semua data secara paralel.
+  // Catatan: Anggaran tetap per BULAN kalender (limit anggaran bersifat bulanan).
+  await Promise.all([
+    muatSaldo(),
+    muatRingkasan(),               // 30 hari terakhir
+    muatBudget(bulan, tahun),      // tetap bulan ini
+    muatGoal(),
+    muatTransaksiTerbaru(),        // 30 hari terakhir
+    muatGrafikTren(30),            // default 30 hari
+    muatErosi(),                   // 30 hari terakhir
+  ]);
+}
+
+/**
+ * Pasang event pada segmented control rentang grafik tren (30 / 90 / 180 hari).
+ */
+function pasangSegmentedTren() {
+  const seg = document.getElementById('seg-tren-dash');
+  if (!seg) return;
+  seg.querySelectorAll('.segmented-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      seg.querySelectorAll('.segmented-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const days = parseInt(btn.dataset.days, 10) || 30;
+      muatGrafikTren(days);
+    });
+  });
+}
+
+/**
+ * Teks label rentang untuk subjudul.
+ */
+function labelRentang(days) {
+  if (days >= 180) return '6 bulan terakhir';
+  if (days >= 90) return '3 bulan terakhir';
+  return '30 hari terakhir';
+}
+
+/**
+ * Muat ringkasan erosi nilai dari pemasukan bulan ini.
+ * Erosi = penurunan daya beli rupiah terhadap USD sejak transaksi diterima.
+ */
+async function muatErosi() {
+  const card = document.getElementById('card-erosi');
+  const konten = document.getElementById('erosi-konten');
+  const subtitle = document.getElementById('erosi-subtitle');
+  if (!card) return;
+
+  try {
+    const trxList = await apiGet(`/api/transactions?days=30`);
+    // Ambil hanya income yang punya data erosi terhitung
+    const incomeErosi = (trxList || []).filter(
+      t => t.kind === 'income' && t.erosi && t.erosi.erosi_persen !== undefined
+    );
+
+    if (incomeErosi.length === 0) {
+      // Tidak ada data erosi → sembunyikan kartu agar dashboard tetap rapi
+      card.style.display = 'none';
+      return;
+    }
+
+    // Hitung rata-rata % dan total rupiah yang tergerus
+    let totalPersen = 0;
+    let totalTergerus = 0;  // rupiah
+    incomeErosi.forEach(t => {
+      const p = parseFloat(t.erosi.erosi_persen) || 0;
+      totalPersen += p;
+      totalTergerus += t.amount * (p / 100);
+    });
+    const avgPersen = totalPersen / incomeErosi.length;
+
+    const turun = avgPersen >= 0;
+    const warna = turun ? 'var(--neg)' : 'var(--pos)';
+    const arahTeks = turun ? 'tergerus' : 'menguat';
+
+    card.style.display = '';
+    subtitle.textContent =
+      `Daya beli ${incomeErosi.length} pemasukan 30 hari terakhir terhadap USD`;
+
+    konten.innerHTML = `
+      <div class="stat-card" style="box-shadow:none; border:1px solid var(--border);">
+        <div class="stat-card-label"><span class="material-symbols-outlined">${turun ? 'trending_down' : 'trending_up'}</span> Rata-rata Erosi</div>
+        <div class="stat-card-value" style="color:${warna};">${turun ? '↓' : '↑'} ${Math.abs(avgPersen).toFixed(2)}%</div>
+        <div class="stat-card-change">terhadap USD</div>
+      </div>
+      <div class="stat-card" style="box-shadow:none; border:1px solid var(--border);">
+        <div class="stat-card-label"><span class="material-symbols-outlined">savings</span> Nilai ${arahTeks}</div>
+        <div class="stat-card-value" style="color:${warna};">${formatRupiah(Math.abs(Math.round(totalTergerus)))}</div>
+        <div class="stat-card-change">estimasi setara rupiah</div>
+      </div>
+      <div class="stat-card" style="box-shadow:none; border:1px solid var(--border);">
+        <div class="stat-card-label"><span class="material-symbols-outlined">payments</span> Pemasukan Dianalisis</div>
+        <div class="stat-card-value">${incomeErosi.length}</div>
+        <div class="stat-card-change">punya data kurs</div>
+      </div>`;
+
+  } catch (err) {
+    card.style.display = 'none';
+  }
+}
+
+/**
+ * Muat dan tampilkan total saldo dari semua dompet.
+ */
+async function muatSaldo() {
+  try {
+    const wallets = await apiGet('/api/wallets');
+    const totalSaldo = wallets.reduce((sum, w) => sum + (w.saldo || 0), 0);
+    const jumlahDompet = wallets.length;
+
+    document.getElementById('stat-saldo').textContent = formatRupiah(totalSaldo);
+    document.getElementById('stat-saldo-info').textContent =
+      `dari ${jumlahDompet} dompet`;
+  } catch (err) {
+    document.getElementById('stat-saldo').textContent = 'Error';
+    document.getElementById('stat-saldo-info').textContent = err.message;
+  }
+}
+
+/**
+ * Muat ringkasan income/expense bulan ini dari /api/reports/summary.
+ */
+async function muatRingkasan() {
+  try {
+    // 30 hari terakhir (bukan bulan kalender)
+    const data = await apiGet(`/api/reports/summary?days=30`);
+    const income = data.income || 0;
+    const expense = data.expense || 0;
+    const net = income - expense;
+    const pctTabungan = income > 0 ? Math.round(net / income * 100) : 0;
+
+    document.getElementById('stat-income').textContent = formatRupiah(income);
+    document.getElementById('stat-expense').textContent = formatRupiah(expense);
+    document.getElementById('stat-net').textContent = formatRupiah(net);
+    document.getElementById('stat-net-info').textContent =
+      `${pctTabungan}% dari pemasukan · 30 hari`;
+
+    // Perbarui nama user di sapaan
+    try {
+      const me = await apiGet('/api/auth/me');
+      const elSalam = document.getElementById('salam-nama');
+      if (elSalam) {
+        const namaDepan = (me.name || 'Pengguna').split(' ')[0];
+        elSalam.textContent = `Halo, ${namaDepan}! `;
+      }
+    } catch (e) { /* abaikan error profil */ }
+
+  } catch (err) {
+    document.getElementById('stat-income').textContent = '—';
+    document.getElementById('stat-expense').textContent = '—';
+    document.getElementById('stat-net').textContent = '—';
+  }
+}
+
+/**
+ * Muat 3 budget teratas dan tampilkan progress bar.
+ */
+async function muatBudget(bulan, tahun) {
+  const container = document.getElementById('container-budget');
+  if (!container) return;
+
+  try {
+    const budgets = await apiGet(`/api/budgets?month=${bulan}&year=${tahun}`);
+    if (!budgets || budgets.length === 0) {
+      container.innerHTML = '<div class="text-muted text-sm">Belum ada anggaran bulan ini. <a href="/budgets">Buat anggaran</a>.</div>';
+      return;
+    }
+
+    // Tampilkan 3 budget teratas (diurutkan persen tertinggi)
+    const top3 = budgets.slice(0, 3);
+    container.innerHTML = top3.map(b => {
+      const persen = b.persen_terpakai || 0;
+      const terpakai = b.terpakai || 0;
+      const kelas = persen >= 100 ? 'over' : persen >= 80 ? 'warn' : 'safe';
+      const statusTeks = persen >= 100
+        ? `<span class="text-neg">Melebihi!</span>`
+        : persen >= 80
+          ? `<span style="color:var(--warning)">Hampir habis!</span>`
+          : `<span class="text-pos">Aman</span>`;
+      const widthPct = Math.min(persen, 100).toFixed(1);
+
+      return `
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.375rem;">
+            <span class="text-sm fw-semibold">${b.nama_kategori || 'Kategori'}</span>
+            <span class="text-sm text-muted">${formatRupiah(terpakai)} / ${formatRupiah(b.limit_amount)}</span>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar ${kelas}" style="width:${widthPct}%;"></div>
+          </div>
+          <div class="progress-label">
+            <span>${persen.toFixed(0)}%</span>
+            ${statusTeks}
+          </div>
+        </div>`;
+    }).join('');
+
+  } catch (err) {
+    container.innerHTML = `<div class="text-muted text-sm">${err.message}</div>`;
+  }
+}
+
+/**
+ * Muat 3 goal teratas dan tampilkan list.
+ */
+async function muatGoal() {
+  const container = document.getElementById('container-goals');
+  if (!container) return;
+
+  try {
+    const goals = await apiGet('/api/goals');
+    if (!goals || goals.length === 0) {
+      container.innerHTML = '<div class="text-muted text-sm">Belum ada goal tabungan. <a href="/goals">Buat goal</a>.</div>';
+      return;
+    }
+
+    const top3 = goals.slice(0, 3);
+    container.innerHTML = top3.map(g => {
+      const pct = g.progress_persen || 0;
+      const kelasB = pct >= 100 ? 'badge-pos' : pct >= 50 ? 'badge-neutral' : 'badge-neutral';
+      return `
+        <div class="list-item">
+          <div class="list-item-left">
+            <div class="list-item-icon icon-accent">
+              <span class="material-symbols-outlined">savings</span>
+            </div>
+            <div>
+              <div class="list-item-name">${escHtml(g.name)}</div>
+              <div class="list-item-sub">${formatRupiah(g.saved_amount)} dari ${formatRupiah(g.target_amount)}</div>
+            </div>
+          </div>
+          <span class="badge ${kelasB}">${pct.toFixed(0)}%</span>
+        </div>`;
+    }).join('');
+
+  } catch (err) {
+    container.innerHTML = `<div class="text-muted text-sm">${err.message}</div>`;
+  }
+}
+
+/**
+ * Muat 5 transaksi terbaru dan tampilkan list.
+ */
+async function muatTransaksiTerbaru() {
+  const container = document.getElementById('container-transaksi');
+  if (!container) return;
+
+  try {
+    // 30 hari terakhir
+    const trxList = await apiGet(`/api/transactions?days=30`);
+    if (!trxList || trxList.length === 0) {
+      container.innerHTML = '<div class="text-muted text-sm">Belum ada transaksi dalam 30 hari terakhir.</div>';
+      return;
+    }
+
+    const top5 = trxList.slice(0, 5);
+    container.innerHTML = top5.map(trx => {
+      const isIncome = trx.kind === 'income';
+      const tanda = isIncome ? '+' : '-';
+      const kelasWarna = isIncome ? 'text-pos' : 'text-neg';
+      const ikonEl = isIncome ? 'payments' : 'receipt_long';
+      const ikonKelas = isIncome ? 'icon-pos' : 'icon-neg';
+      // Format tanggal + waktu
+      const tgl = new Date(trx.date + 'T00:00:00');
+      const tglStr = tgl.toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' });
+      const waktuStr = trx.time ? ` · ${trx.time}` : '';
+
+      return `
+        <div class="list-item">
+          <div class="list-item-left">
+            <div class="list-item-icon ${ikonKelas}">
+              <span class="material-symbols-outlined">${ikonEl}</span>
+            </div>
+            <div>
+              <div class="list-item-name">${escHtml(trx.note || '—')}</div>
+              <div class="list-item-sub">${tglStr}${waktuStr}</div>
+            </div>
+          </div>
+          <span class="${kelasWarna} fw-bold">${tanda}${formatRupiah(trx.amount)}</span>
+        </div>`;
+    }).join('');
+
+  } catch (err) {
+    container.innerHTML = `<div class="text-muted text-sm">${err.message}</div>`;
+  }
+}
+
+/**
+ * Muat data tren HARIAN (maksimal 1 bulan terakhir) dan render Chart.js (line chart).
+ */
+async function muatGrafikTren(days = 30) {
+  try {
+    // apiFetch mengembalikan data dari key "data" — kita perlu key "chart" dari response asli
+    // Gunakan fetch langsung agar bisa akses key "chart"
+    const resp = await fetch(`/api/reports/trend-daily?days=${days}`);
+    if (resp.status === 401) { window.location.href = '/login'; return; }
+    const json = await resp.json();
+    if (!json.ok) return;
+
+    const chart = json.chart;
+    if (!chart || !chart.labels) return;
+
+    // Perbarui subjudul kartu sesuai rentang
+    const subEl = document.getElementById('subtitle-tren-dash');
+    if (subEl) subEl.textContent = `Harian — ${labelRentang(days)}`;
+
+    // Destroy chart lama jika ada
+    if (chartTren) {
+      chartTren.destroy();
+      if (window._rfCharts) window._rfCharts = window._rfCharts.filter(c => c !== chartTren);
+      chartTren = null;
+    }
+
+    chartTren = initTrendChart(
+      'chart-weekly',
+      chart.labels,
+      chart.income,
+      chart.expense
+    );
+    if (chartTren) window._rfCharts.push(chartTren);
+
+  } catch (err) {
+    const errEl = document.getElementById('chart-error');
+    if (errEl) {
+      errEl.style.display = '';
+      errEl.innerHTML = `<div class="text-muted text-sm">${err.message}</div>`;
+    }
+  }
+}
+
+/**
+ * Escape HTML untuk mencegah XSS.
+ * @param {string} str
+ * @returns {string}
+ */
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
+
+/**
+ * Komponen Alpine untuk kartu kurs USD/IDR di dashboard.
+ * Mengelola state teks (kurs terkini & perubahan); grafik digambar Chart.js.
+ */
+/**
+ * Format timestamp ISO menjadi teks "Terakhir diperbarui …".
+ */
+function teksTerakhirUpdate(iso, cached) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const waktu = d.toLocaleString('id-ID', {
+    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+  });
+  return (cached ? 'Data tersimpan · ' : 'Diperbarui ') + waktu;
+}
+
+function kursDashboard() {
+  return {
+    loading: true,
+    punyaGrafik: false,
+    rateLabel: '—',
+    change: null,
+    naik: false,
+    changeLabel: '',
+    updatedLabel: '',
+
+    async muat() {
+      try {
+        const [curR, histR] = await Promise.all([
+          fetch('/api/market/usd-idr').then(r => r.json()),
+          fetch('/api/market/usd-idr/history?months=2').then(r => r.json()),
+        ]);
+
+        // Kurs terkini
+        if (curR.ok && curR.data && curR.data.rate) {
+          this.rateLabel = 'Rp ' + Math.round(curR.data.rate).toLocaleString('id-ID');
+          this.updatedLabel = teksTerakhirUpdate(curR.data.fetched_at, curR.data.cached);
+        }
+
+        // Riwayat → grafik + badge perubahan
+        const hist = histR.ok ? histR.data : [];
+        if (hist.length >= 2) {
+          const vals = hist.map(d => d.rate);
+          const delta = vals[vals.length - 1] - vals[0];
+          const pct = (delta / vals[0]) * 100;
+          this.change = delta;
+          this.naik = delta >= 0;  // kurs naik = rupiah melemah → tandai merah
+          this.changeLabel =
+            (delta >= 0 ? '▲ ' : '▼ ') +
+            'Rp ' + Math.round(Math.abs(delta)).toLocaleString('id-ID') +
+            ' (' + Math.abs(pct).toFixed(2) + '%) · 2 bln';
+          this.punyaGrafik = true;
+          // Tunggu Alpine menampilkan canvas sebelum Chart.js mengukur tinggi
+          this.$nextTick(() => renderKursDashChart(hist));
+        }
+      } catch (e) {
+        this.punyaGrafik = false;
+      } finally {
+        this.loading = false;
+      }
+    },
+  };
+}
+
+/**
+ * Gambar line chart kurs USD/IDR di dashboard memakai helper charts.js.
+ */
+function renderKursDashChart(hist) {
+  const labels = hist.map(d => d.date);
+  const values = hist.map(d => d.rate);
+  if (window._kursDashChart) {
+    window._kursDashChart.destroy();
+    if (window._rfCharts) {
+      window._rfCharts = window._rfCharts.filter(c => c !== window._kursDashChart);
+    }
+  }
+  window._kursDashChart = initUsdIdrLineChart('chart-kurs-dash', labels, values);
+}
+
+/**
+ * Komponen Alpine untuk kartu harga emas per gram di dashboard.
+ */
+function emasDashboard() {
+  return {
+    loading: true,
+    punyaGrafik: false,
+    rateLabel: '—',
+    change: null,
+    naik: false,
+    changeLabel: '',
+    updatedLabel: '',
+
+    async muat() {
+      try {
+        const [curR, histR] = await Promise.all([
+          fetch('/api/market/gold').then(r => r.json()),
+          fetch('/api/market/gold/history?months=2').then(r => r.json()),
+        ]);
+
+        // Harga emas per gram terkini
+        if (curR.ok && curR.data && curR.data.price_idr_per_gram) {
+          this.rateLabel = 'Rp ' + Math.round(curR.data.price_idr_per_gram).toLocaleString('id-ID');
+          this.updatedLabel = teksTerakhirUpdate(curR.data.fetched_at, curR.data.cached);
+        }
+
+        // Riwayat → grafik + badge perubahan (emas naik = kabar baik → hijau)
+        const hist = histR.ok ? histR.data : [];
+        if (hist.length >= 2) {
+          const vals = hist.map(d => d.price_idr);
+          const delta = vals[vals.length - 1] - vals[0];
+          const pct = (delta / vals[0]) * 100;
+          this.change = delta;
+          this.naik = delta >= 0;
+          this.changeLabel =
+            (delta >= 0 ? '▲ ' : '▼ ') +
+            'Rp ' + Math.round(Math.abs(delta)).toLocaleString('id-ID') +
+            ' (' + Math.abs(pct).toFixed(2) + '%) · 2 bln';
+          this.punyaGrafik = true;
+          this.$nextTick(() => renderEmasDashChart(hist));
+        }
+      } catch (e) {
+        this.punyaGrafik = false;
+      } finally {
+        this.loading = false;
+      }
+    },
+  };
+}
+
+/**
+ * Gambar line chart harga emas di dashboard.
+ */
+function renderEmasDashChart(hist) {
+  const labels = hist.map(d => d.date);
+  const values = hist.map(d => d.price_idr);
+  if (window._emasDashChart) {
+    window._emasDashChart.destroy();
+    if (window._rfCharts) {
+      window._rfCharts = window._rfCharts.filter(c => c !== window._emasDashChart);
+    }
+  }
+  window._emasDashChart = initGoldLineChart('chart-emas-dash', labels, values);
+}
+
+// Muat semua data saat DOM siap
+document.addEventListener('DOMContentLoaded', muatDashboard);
+</script>
+{% endblock %}

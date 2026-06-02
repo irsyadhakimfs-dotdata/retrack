@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login - ReFinance</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "primary-fixed": "#dae2fd",
+                    "secondary-container": "#316bf3",
+                    "surface-tint": "#565e74",
+                    "on-tertiary-fixed-variant": "#574425",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#f3f0f2",
+                    "outline": "#76777d",
+                    "on-secondary-fixed": "#00174b",
+                    "secondary-fixed-dim": "#b4c5ff",
+                    "on-error": "#ffffff",
+                    "secondary-fixed": "#dbe1ff",
+                    "primary-fixed-dim": "#bec6e0",
+                    "surface-bright": "#fcf8fa",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f6f3f5",
+                    "on-surface": "#1b1b1d",
+                    "surface-container-highest": "#e4e2e4",
+                    "on-background": "#1b1b1d",
+                    "surface": "#fcf8fa",
+                    "on-tertiary-container": "#98805d",
+                    "surface-container": "#f0edef",
+                    "tertiary-fixed": "#fcdeb5",
+                    "tertiary-container": "#271901",
+                    "on-primary-fixed-variant": "#3f465c",
+                    "error": "#ba1a1a",
+                    "inverse-primary": "#bec6e0",
+                    "primary-container": "#131b2e",
+                    "on-primary-fixed": "#131b2e",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#c6c6cd",
+                    "tertiary": "#000000",
+                    "secondary": "#0051d5",
+                    "primary": "#000000",
+                    "inverse-surface": "#303032",
+                    "on-error-container": "#93000a",
+                    "on-surface-variant": "#45464d",
+                    "on-secondary-container": "#fefcff",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-high": "#eae7e9",
+                    "on-tertiary-fixed": "#271901",
+                    "background": "#fcf8fa",
+                    "on-primary-container": "#7c839b",
+                    "surface-dim": "#dcd9db",
+                    "surface-variant": "#e4e2e4",
+                    "on-secondary-fixed-variant": "#003ea8",
+                    "tertiary-fixed-dim": "#dec29a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "xs": "4px",
+                    "xl": "32px",
+                    "2xl": "48px",
+                    "container-margin-mobile": "16px",
+                    "md": "16px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "container-margin-desktop": "80px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-md": ["Manrope"],
+                    "label-md": ["Manrope"],
+                    "display-lg": ["Manrope"],
+                    "display-lg-mobile": ["Manrope"],
+                    "body-sm": ["Manrope"],
+                    "body-lg": ["Manrope"],
+                    "label-sm": ["Manrope"],
+                    "headline-md": ["Manrope"],
+                    "headline-sm": ["Manrope"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-lg-mobile": ["36px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "1", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "headline-sm": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface min-h-screen flex items-center justify-center p-container-margin-mobile md:p-container-margin-desktop antialiased">
+<!-- Login Container Card -->
+<main class="bg-surface-container-lowest w-full max-w-[420px] rounded-xl border border-outline-variant shadow-[0px_4px_12px_rgba(15,23,42,0.05)] p-xl transition-all duration-300">
+<!-- Header / Logo -->
+<div class="flex flex-col items-center justify-center mb-2xl text-center">
+<div class="flex items-center justify-center w-12 h-12 rounded-full bg-primary-fixed mb-md">
+<span class="material-symbols-outlined text-[28px] text-on-primary-fixed" style="font-variation-settings: 'FILL' 1;">
+                    account_balance_wallet
+                </span>
+</div>
+<h1 class="font-headline-md text-headline-md text-primary tracking-tight">ReFinance</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Asisten keuangan presisi Anda</p>
+</div>
+<!-- Login Form -->
+<form action="#" class="space-y-lg" method="POST">
+<!-- Email Input Group -->
+<div class="flex flex-col space-y-xs">
+<label class="font-label-md text-label-md text-on-surface" for="email">Email</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-sm text-outline-variant pointer-events-none">
+                        mail
+                    </span>
+<input class="w-full pl-[40px] pr-sm py-sm bg-surface-container-lowest border border-outline rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline-variant focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors" id="email" name="email" placeholder="nama@email.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Input Group -->
+<div class="flex flex-col space-y-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-on-surface" for="password">Password</label>
+<a class="font-label-sm text-label-sm text-secondary hover:underline" href="#" tabindex="-1">Lupa password?</a>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-sm text-outline-variant pointer-events-none">
+                        lock
+                    </span>
+<input class="w-full pl-[40px] pr-sm py-sm bg-surface-container-lowest border border-outline rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline-variant focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors" id="password" name="password" placeholder="Masukkan password Anda" required="" type="password"/>
+</div>
+</div>
+<!-- Submit Action -->
+<div class="pt-sm">
+<button class="w-full bg-primary text-on-primary font-label-md text-label-md py-[12px] rounded-lg hover:bg-inverse-surface transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary flex justify-center items-center" type="submit">
+                    Masuk
+                </button>
+</div>
+</form>
+<!-- Registration Link -->
+<div class="mt-xl text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Belum punya akun? 
+                <a class="font-label-md text-label-md text-secondary hover:underline transition-all" href="#">Daftar</a>
+</p>
+</div>
+</main>
+<!-- Lightweight Micro-interaction Script -->
+<script>
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                const icon = this.parentElement.querySelector('.material-symbols-outlined');
+                if(icon) {
+                    icon.classList.remove('text-outline-variant');
+                    icon.classList.add('text-secondary');
+                }
+            });
+            input.addEventListener('blur', function() {
+                const icon = this.parentElement.querySelector('.material-symbols-outlined');
+                if(icon) {
+                    icon.classList.remove('text-secondary');
+                    icon.classList.add('text-outline-variant');
+                }
+            });
+        });
+    </script>
+</body></html>

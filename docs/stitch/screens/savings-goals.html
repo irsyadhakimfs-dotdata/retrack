@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Savings Goals - ReFinance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#fefcff",
+                        "inverse-on-surface": "#f3f0f2",
+                        "on-surface-variant": "#45464d",
+                        "on-primary-container": "#7c839b",
+                        "tertiary": "#000000",
+                        "surface-container-low": "#f6f3f5",
+                        "on-secondary-fixed-variant": "#003ea8",
+                        "on-tertiary-fixed": "#271901",
+                        "on-tertiary-fixed-variant": "#574425",
+                        "surface-container-highest": "#e4e2e4",
+                        "secondary-fixed": "#dbe1ff",
+                        "primary-fixed": "#dae2fd",
+                        "surface-container-high": "#eae7e9",
+                        "surface": "#fcf8fa",
+                        "background": "#fcf8fa",
+                        "on-primary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#131b2e",
+                        "on-tertiary-container": "#98805d",
+                        "on-secondary-fixed": "#00174b",
+                        "secondary": "#0051d5",
+                        "secondary-container": "#316bf3",
+                        "tertiary-container": "#271901",
+                        "surface-bright": "#fcf8fa",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "primary-fixed-dim": "#bec6e0",
+                        "primary-container": "#131b2e",
+                        "on-surface": "#1b1b1d",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#1b1b1d",
+                        "tertiary-fixed-dim": "#dec29a",
+                        "outline-variant": "#c6c6cd",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#fcdeb5",
+                        "error": "#ba1a1a",
+                        "outline": "#76777d",
+                        "surface-container": "#f0edef",
+                        "surface-variant": "#e4e2e4",
+                        "inverse-surface": "#303032",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "surface-dim": "#dcd9db",
+                        "surface-tint": "#565e74",
+                        "inverse-primary": "#bec6e0",
+                        "primary": "#000000",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "base": "4px",
+                        "container-margin-desktop": "80px",
+                        "sm": "8px",
+                        "container-margin-mobile": "16px",
+                        "2xl": "48px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "display-lg-mobile": ["Manrope"],
+                        "body-sm": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "label-sm": ["Manrope"],
+                        "headline-sm": ["Manrope"],
+                        "headline-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "display-lg-mobile": ["36px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "1", "fontWeight": "500"}],
+                        "headline-sm": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; background-color: #fcf8fa; color: #1b1b1d; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.filled { font-variation-settings: 'FILL' 1; }
+        
+        /* Custom Scrollbar for side nav */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e4e2e4; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col md:flex-row">
+<!-- TopNavBar (Mobile Only) -->
+<header class="md:hidden fixed top-0 left-0 w-full z-50 flex justify-between items-center px-container-margin-mobile h-16 bg-surface border-b border-outline-variant flat no shadows">
+<div class="font-headline-md text-headline-md text-primary font-bold">ReFinance</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 text-primary hover:bg-surface-container transition-colors rounded-full"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-2 text-primary hover:bg-surface-container transition-colors rounded-full"><span class="material-symbols-outlined">account_circle</span></button>
+</div>
+</header>
+<!-- SideNavBar (Desktop Only) -->
+<nav class="hidden md:flex flex-col py-lg space-y-sm bg-surface h-screen w-64 fixed left-0 top-0 border-r border-outline-variant flat no shadows z-40 overflow-y-auto custom-scrollbar">
+<div class="px-lg mb-xl">
+<div class="font-headline-sm text-headline-sm text-primary mb-lg">ReFinance</div>
+<div class="flex items-center gap-md p-sm bg-surface-container-low rounded-lg border border-outline-variant">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-headline-sm text-headline-sm">PA</div>
+<div>
+<div class="font-label-md text-label-md text-on-surface">Personal Assistant</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Managing Wealth</div>
+</div>
+</div>
+</div>
+<ul class="flex-1 px-sm space-y-xs">
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-r-full text-on-surface-variant hover:bg-surface-container-low transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-r-full text-on-surface-variant hover:bg-surface-container-low transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md text-label-md">Transaksi</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-r-full text-on-surface-variant hover:bg-surface-container-low transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">category</span>
+<span class="font-label-md text-label-md">Kategori</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-r-full text-on-surface-variant hover:bg-surface-container-low transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Budget</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-r-full text-on-surface-variant hover:bg-surface-container-low transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-label-md text-label-md">Wallets</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-r-full text-secondary font-bold border-r-4 border-secondary bg-surface-container hover:bg-surface-container-low transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined filled">track_changes</span>
+<span class="font-label-md text-label-md">Goals</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-r-full text-on-surface-variant hover:bg-surface-container-low transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-md text-label-md">Laporan</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-r-full text-on-surface-variant hover:bg-surface-container-low transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="font-label-md text-label-md">Market</span>
+</a>
+</li>
+</ul>
+<div class="px-sm mt-auto">
+<a class="flex items-center gap-md px-md py-sm rounded-r-full text-on-surface-variant hover:bg-surface-container-low transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Pengaturan</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 pt-20 pb-24 md:pt-lg md:pb-lg px-container-margin-mobile md:px-container-margin-desktop max-w-[1200px] mx-auto w-full">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-md mb-xl">
+<div>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface mb-xs">Savings Goals</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Lacak dan capai target finansial impian Anda.</p>
+</div>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-full font-label-md text-label-md hover:bg-on-surface-variant transition-colors flex items-center gap-sm w-fit">
+<span class="material-symbols-outlined">add</span> Buat Goal Baru
+            </button>
+</div>
+<!-- Summary Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md mb-xl">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+<div class="font-body-sm text-body-sm text-on-surface-variant mb-xs">Total Terkumpul</div>
+<div class="font-headline-md text-headline-md text-on-surface">Rp 85.500.000</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+<div class="font-body-sm text-body-sm text-on-surface-variant mb-xs">Target Keseluruhan</div>
+<div class="font-headline-md text-headline-md text-on-surface">Rp 350.000.000</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+<div class="font-body-sm text-body-sm text-on-surface-variant mb-xs">Goals Aktif</div>
+<div class="font-headline-md text-headline-md text-on-surface">3 Target</div>
+</div>
+</div>
+<!-- Goals Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
+<!-- Goal Card 1: Beli Mobil Baru -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col group hover:border-secondary transition-colors relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 bg-surface-container">
+<div class="h-full bg-secondary" style="width: 45%;"></div>
+</div>
+<div class="flex justify-between items-start mb-md mt-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Beli Mobil Baru</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Desember 2024</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+<div class="mb-lg">
+<div class="flex justify-between items-end mb-xs">
+<span class="font-headline-md text-headline-md text-on-surface">Rp 45 Jt</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ Rp 100 Jt</span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary font-medium">45% Tercapai</p>
+</div>
+<div class="mt-auto space-y-md">
+<div class="bg-surface-container-low rounded-lg p-sm flex justify-between items-center border border-surface-variant">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">calendar_month</span> Est. Bulanan</span>
+<span class="font-label-md text-label-md text-on-surface">Rp 5.500.000</span>
+</div>
+<button class="w-full bg-secondary text-on-secondary py-sm rounded-lg font-label-md text-label-md hover:bg-secondary-container transition-colors">
+                        Setor Dana
+                    </button>
+</div>
+</div>
+<!-- Goal Card 2: Liburan Jepang -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col group hover:border-secondary transition-colors relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 bg-surface-container">
+<div class="h-full bg-secondary" style="width: 75%;"></div>
+</div>
+<div class="flex justify-between items-start mb-md mt-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined">flight_takeoff</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Liburan Jepang</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">April 2024</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+<div class="mb-lg">
+<div class="flex justify-between items-end mb-xs">
+<span class="font-headline-md text-headline-md text-on-surface">Rp 30 Jt</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ Rp 40 Jt</span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary font-medium">75% Tercapai</p>
+</div>
+<div class="mt-auto space-y-md">
+<div class="bg-surface-container-low rounded-lg p-sm flex justify-between items-center border border-surface-variant">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">calendar_month</span> Est. Bulanan</span>
+<span class="font-label-md text-label-md text-on-surface">Rp 2.500.000</span>
+</div>
+<button class="w-full bg-surface text-secondary border border-outline-variant py-sm rounded-lg font-label-md text-label-md hover:border-secondary hover:bg-surface-container-low transition-colors">
+                        Setor Dana
+                    </button>
+</div>
+</div>
+<!-- Goal Card 3: Dana Darurat -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col group hover:border-secondary transition-colors relative overflow-hidden lg:col-span-1 md:col-span-2">
+<div class="absolute top-0 left-0 w-full h-1 bg-surface-container">
+<div class="h-full bg-error" style="width: 5%;"></div>
+</div>
+<div class="flex justify-between items-start mb-md mt-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined">health_and_safety</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Dana Darurat</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Tanpa Batas Waktu</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+<div class="mb-lg">
+<div class="flex justify-between items-end mb-xs">
+<span class="font-headline-md text-headline-md text-on-surface">Rp 10.5 Jt</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ Rp 210 Jt</span>
+</div>
+<p class="font-body-sm text-body-sm text-error font-medium">5% Tercapai - Perlu Perhatian</p>
+</div>
+<div class="mt-auto space-y-md">
+<div class="bg-surface-container-low rounded-lg p-sm flex justify-between items-center border border-surface-variant">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">calendar_month</span> Target Bulanan</span>
+<span class="font-label-md text-label-md text-on-surface">Rp 1.000.000</span>
+</div>
+<button class="w-full bg-surface text-secondary border border-outline-variant py-sm rounded-lg font-label-md text-label-md hover:border-secondary hover:bg-surface-container-low transition-colors">
+                        Setor Dana
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 bg-surface px-4 pb-safe rounded-t-xl border-t border-outline-variant shadow-lg">
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:text-secondary active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:text-secondary active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">list_alt</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:text-secondary active:scale-90 duration-150 relative -top-3" href="#">
+<div class="bg-primary text-on-primary rounded-full p-2 shadow-md">
+<span class="material-symbols-outlined text-[28px]">add</span>
+</div>
+<span class="font-label-sm text-label-sm-mobile mt-1">Add</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary font-bold active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined filled">stars</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">Goals</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:text-secondary active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">Settings</span>
+</a>
+</nav>
+</body></html>

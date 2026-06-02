@@ -1,0 +1,444 @@
+{% extends "base.html" %}
+
+{% block title %}DWH Dashboard{% endblock %}
+{% block page_title %}DWH Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ===== Header halaman ===== -->
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Data Warehouse Dashboard</h2>
+    <p class="page-subtitle">
+      Analisis transaksi dari lapisan DWH (Star Schema) · Kimball Bottom-Up Methodology
+    </p>
+  </div>
+  <!-- Badge "Data Warehouse Mode" -->
+  <span style="
+    display:inline-flex; align-items:center; gap:0.4rem;
+    padding:0.4rem 0.9rem; border-radius:999px;
+    background:var(--accent); color:#fff;
+    font-size:0.8125rem; font-weight:600; letter-spacing:0.03em;">
+    <span class="material-symbols-outlined" style="font-size:1rem;">storage</span>
+    Data Warehouse Mode
+  </span>
+</div>
+
+<!-- ===== Panel ETL ===== -->
+<div class="card mb-4">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Proses ETL</div>
+      <div class="card-subtitle">Extract → Transform → Load dari OLTP ke DWH</div>
+    </div>
+    <button class="btn btn-primary" id="btn-etl" onclick="jalankanETL()">
+      <span class="material-symbols-outlined">play_arrow</span>
+      Jalankan ETL
+    </button>
+  </div>
+  <!-- Hasil ETL ditampilkan di sini -->
+  <div id="etl-result" style="display:none; margin-top:0.75rem;">
+    <div style="display:flex; gap:1.5rem; flex-wrap:wrap;">
+      <div class="stat-item">
+        <div class="stat-label">Dimuat</div>
+        <div class="stat-value pos" id="etl-loaded">—</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Dilewati</div>
+        <div class="stat-value" id="etl-skipped" style="color:var(--text-2);">—</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Error</div>
+        <div class="stat-value neg" id="etl-errors">—</div>
+      </div>
+    </div>
+    <p id="etl-pesan" class="text-sm text-muted" style="margin-top:0.5rem;"></p>
+  </div>
+</div>
+
+<!-- ===== Grid dua kolom: Bar chart + Doughnut chart ===== -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+
+  <!-- Grafik: Income vs Expense per bulan -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Income vs Expense per Bulan</div>
+        <div class="card-subtitle">Tahun {{ tahun }} · sumber: DWH</div>
+      </div>
+    </div>
+    <div style="position:relative; height:240px; margin-top:0.5rem;">
+      <canvas id="chart-summary"></canvas>
+    </div>
+    <div id="summary-fallback" class="text-muted text-sm"
+         style="display:none; text-align:center; padding:2rem 0;">
+      Belum ada data — jalankan ETL terlebih dahulu.
+    </div>
+  </div>
+
+  <!-- Grafik: Top 5 kategori pengeluaran -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Top 5 Kategori Pengeluaran</div>
+        <div class="card-subtitle">3 bulan terakhir · sumber: DWH</div>
+      </div>
+    </div>
+    <div style="position:relative; height:240px; margin-top:0.5rem;">
+      <canvas id="chart-top-cat"></canvas>
+    </div>
+    <div id="topcat-fallback" class="text-muted text-sm"
+         style="display:none; text-align:center; padding:2rem 0;">
+      Belum ada data — jalankan ETL terlebih dahulu.
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== Kartu Erosi Nilai ===== -->
+<div class="card mb-4">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Rata-rata Erosi Nilai Pemasukan</div>
+      <div class="card-subtitle">
+        Rata-rata penurunan daya beli Rupiah terhadap USD pada transaksi income
+      </div>
+    </div>
+    <span class="material-symbols-outlined" style="font-size:2rem; color:var(--accent);">trending_down</span>
+  </div>
+  <div id="erosi-content">
+    <div class="text-muted text-sm">Memuat data erosi…</div>
+  </div>
+</div>
+
+<!-- ===== Info Star Schema (untuk PPT) ===== -->
+<div class="card mb-4">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Arsitektur Data Warehouse</div>
+      <div class="card-subtitle">Star Schema — 1 tabel fakta, 4 tabel dimensi</div>
+    </div>
+    <span class="material-symbols-outlined" style="font-size:2rem; color:var(--accent);">schema</span>
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:1rem;">
+
+    <div style="border:1px solid var(--border); border-radius:var(--radius-btn);
+                padding:0.9rem; text-align:center;">
+      <span class="material-symbols-outlined" style="color:var(--accent); font-size:1.5rem;">star</span>
+      <div class="fw-bold text-sm mt-1">fact_transaction</div>
+      <div class="text-muted" style="font-size:0.75rem;">Tabel Fakta</div>
+      <div class="text-muted" style="font-size:0.7rem; margin-top:0.25rem;">
+        amount · kind · erosi_persen
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--border); border-radius:var(--radius-btn);
+                padding:0.9rem; text-align:center;">
+      <span class="material-symbols-outlined" style="color:var(--text-2); font-size:1.5rem;">calendar_today</span>
+      <div class="fw-bold text-sm mt-1">dim_date</div>
+      <div class="text-muted" style="font-size:0.75rem;">Dimensi Tanggal</div>
+      <div class="text-muted" style="font-size:0.7rem; margin-top:0.25rem;">
+        day · month · quarter · year
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--border); border-radius:var(--radius-btn);
+                padding:0.9rem; text-align:center;">
+      <span class="material-symbols-outlined" style="color:var(--text-2); font-size:1.5rem;">person</span>
+      <div class="fw-bold text-sm mt-1">dim_user</div>
+      <div class="text-muted" style="font-size:0.75rem;">Dimensi Pengguna</div>
+      <div class="text-muted" style="font-size:0.7rem; margin-top:0.25rem;">
+        name · email · created_at
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--border); border-radius:var(--radius-btn);
+                padding:0.9rem; text-align:center;">
+      <span class="material-symbols-outlined" style="color:var(--text-2); font-size:1.5rem;">account_balance_wallet</span>
+      <div class="fw-bold text-sm mt-1">dim_wallet</div>
+      <div class="text-muted" style="font-size:0.75rem;">Dimensi Dompet</div>
+      <div class="text-muted" style="font-size:0.7rem; margin-top:0.25rem;">
+        name · type
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--border); border-radius:var(--radius-btn);
+                padding:0.9rem; text-align:center;">
+      <span class="material-symbols-outlined" style="color:var(--text-2); font-size:1.5rem;">label</span>
+      <div class="fw-bold text-sm mt-1">dim_category</div>
+      <div class="text-muted" style="font-size:0.75rem;">Dimensi Kategori</div>
+      <div class="text-muted" style="font-size:0.7rem; margin-top:0.25rem;">
+        name · kind
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+// Simpan referensi chart aktif agar bisa di-destroy saat digambar ulang
+let _chartSummary = null;
+let _chartTopCat  = null;
+
+// -------------------------------------------------------
+// ETL
+// -------------------------------------------------------
+async function jalankanETL() {
+  const btn    = document.getElementById('btn-etl');
+  const result = document.getElementById('etl-result');
+
+  btn.disabled = true;
+  btn.innerHTML = `<span class="material-symbols-outlined"
+    style="animation:spin 1s linear infinite;">refresh</span> Memproses…`;
+
+  try {
+    const resp = await fetch('/api/dwh/etl/run', { method: 'POST' });
+    const body = await resp.json();
+
+    if (body.ok) {
+      const s = body.data;
+      document.getElementById('etl-loaded').textContent  = s.loaded;
+      document.getElementById('etl-skipped').textContent = s.skipped;
+      document.getElementById('etl-errors').textContent  = s.errors;
+      document.getElementById('etl-pesan').textContent   =
+        `ETL selesai · ${s.loaded} baris dimuat, ${s.skipped} dilewati (sudah ada), ${s.errors} error.`;
+      result.style.display = 'block';
+
+      // Muat ulang semua chart setelah ETL berhasil
+      await muatSemuaChart();
+    } else {
+      alert('ETL gagal: ' + (body.error || 'Error tidak diketahui'));
+    }
+  } catch (e) {
+    alert('Gagal menghubungi server: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<span class="material-symbols-outlined">play_arrow</span> Jalankan ETL`;
+  }
+}
+
+// -------------------------------------------------------
+// Chart: Income vs Expense per bulan (Bar)
+// -------------------------------------------------------
+async function muatChartSummary() {
+  const canvasEl   = document.getElementById('chart-summary');
+  const fallbackEl = document.getElementById('summary-fallback');
+
+  try {
+    const resp = await fetch('/api/dwh/summary?year={{ tahun }}');
+    const body = await resp.json();
+    const data = body.ok ? body.data : [];
+
+    if (!data.length) {
+      canvasEl.style.display   = 'none';
+      fallbackEl.style.display = 'block';
+      return;
+    }
+
+    canvasEl.style.display   = 'block';
+    fallbackEl.style.display = 'none';
+
+    const labels  = data.map(d => d.month_name);
+    const income  = data.map(d => d.income);
+    const expense = data.map(d => d.expense);
+
+    if (_chartSummary) {
+      _chartSummary.destroy();
+      if (window._rfCharts) window._rfCharts = window._rfCharts.filter(c => c !== _chartSummary);
+    }
+
+    _chartSummary = new Chart(canvasEl, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Pemasukan',
+            data: income,
+            backgroundColor: cssVar('income') + 'CC',
+            borderColor: cssVar('income'),
+            borderWidth: 1,
+            borderRadius: 4,
+          },
+          {
+            label: 'Pengeluaran',
+            data: expense,
+            backgroundColor: cssVar('expense') + 'CC',
+            borderColor: cssVar('expense'),
+            borderWidth: 1,
+            borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: v => 'Rp ' + (v / 1_000_000).toFixed(1) + 'jt',
+            },
+          },
+        },
+      },
+    });
+
+    if (window._rfCharts) window._rfCharts.push(_chartSummary);
+
+  } catch (e) {
+    canvasEl.style.display   = 'none';
+    fallbackEl.style.display = 'block';
+    fallbackEl.textContent   = 'Gagal memuat chart summary.';
+  }
+}
+
+// -------------------------------------------------------
+// Chart: Top 5 kategori pengeluaran (Doughnut)
+// -------------------------------------------------------
+async function muatChartTopCat() {
+  const canvasEl   = document.getElementById('chart-top-cat');
+  const fallbackEl = document.getElementById('topcat-fallback');
+
+  try {
+    const resp = await fetch('/api/dwh/top-categories?months=3&kind=expense');
+    const body = await resp.json();
+    const data = body.ok ? body.data : [];
+
+    if (!data.length) {
+      canvasEl.style.display   = 'none';
+      fallbackEl.style.display = 'block';
+      return;
+    }
+
+    canvasEl.style.display   = 'block';
+    fallbackEl.style.display = 'none';
+
+    const labels = data.map(d => d.category);
+    const values = data.map(d => d.total);
+
+    // Palet warna beragam yang kontras
+    const COLORS = [
+      cssVar('accent'),
+      cssVar('income'),
+      cssVar('expense'),
+      '#F59E0B',
+      '#8B5CF6',
+    ];
+
+    if (_chartTopCat) {
+      _chartTopCat.destroy();
+      if (window._rfCharts) window._rfCharts = window._rfCharts.filter(c => c !== _chartTopCat);
+    }
+
+    _chartTopCat = new Chart(canvasEl, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: COLORS.slice(0, data.length),
+          borderColor: cssVar('card'),
+          borderWidth: 2,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right' },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const v = ctx.parsed;
+                return ' Rp ' + v.toLocaleString('id-ID');
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (window._rfCharts) window._rfCharts.push(_chartTopCat);
+
+  } catch (e) {
+    canvasEl.style.display   = 'none';
+    fallbackEl.style.display = 'block';
+    fallbackEl.textContent   = 'Gagal memuat chart top kategori.';
+  }
+}
+
+// -------------------------------------------------------
+// Card: Erosi Nilai
+// -------------------------------------------------------
+async function muatErosi() {
+  const el = document.getElementById('erosi-content');
+  try {
+    const resp = await fetch('/api/dwh/erosi-summary');
+    const body = await resp.json();
+    const d = body.ok ? body.data : null;
+
+    if (!d || d.total_income_transactions === 0) {
+      el.innerHTML = `
+        <div class="text-muted text-sm">
+          Belum ada data erosi — pastikan transaksi income punya kurs saat ETL dijalankan.
+        </div>`;
+      return;
+    }
+
+    const avgStr = d.avg_erosi_persen !== null
+      ? d.avg_erosi_persen.toFixed(2) + '%'
+      : '—';
+    const warna = (d.avg_erosi_persen !== null && d.avg_erosi_persen > 0)
+      ? 'var(--expense)' : 'var(--income)';
+
+    el.innerHTML = `
+      <div style="display:flex; align-items:baseline; gap:1rem; flex-wrap:wrap;">
+        <div style="font-size:2rem; font-weight:700; color:${warna};">${avgStr}</div>
+        <div class="text-muted text-sm">
+          rata-rata erosi · dari ${d.total_income_transactions} transaksi income
+        </div>
+      </div>
+      <p class="text-sm text-muted" style="margin-top:0.5rem;">
+        Positif = Rupiah melemah terhadap USD (daya beli turun).
+        Negatif = Rupiah menguat (daya beli naik).
+      </p>`;
+  } catch {
+    el.innerHTML = `<div class="text-muted text-sm">Gagal memuat data erosi.</div>`;
+  }
+}
+
+// -------------------------------------------------------
+// Muat semua chart sekaligus
+// -------------------------------------------------------
+async function muatSemuaChart() {
+  await Promise.allSettled([
+    muatChartSummary(),
+    muatChartTopCat(),
+    muatErosi(),
+  ]);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Pastikan Chart.js defaults sudah teraplikasi
+  if (typeof applyChartDefaults === 'function') applyChartDefaults();
+  muatSemuaChart();
+});
+</script>
+
+<style>
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .stat-item   { display:flex; flex-direction:column; gap:0.15rem; }
+  .stat-label  { font-size:0.75rem; color:var(--text-2); }
+  .stat-value  { font-size:1.5rem; font-weight:700; color:var(--text); }
+  .stat-value.pos { color:var(--income); }
+  .stat-value.neg { color:var(--expense); }
+  .fw-bold { font-weight:600; }
+  .mt-1 { margin-top:0.25rem; }
+</style>
+{% endblock %}

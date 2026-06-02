@@ -1,0 +1,328 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Transaksi - ReFinance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e4e2e4",
+                        "outline": "#76777d",
+                        "on-background": "#1b1b1d",
+                        "on-tertiary-fixed": "#271901",
+                        "error": "#ba1a1a",
+                        "surface": "#fcf8fa",
+                        "surface-container-high": "#eae7e9",
+                        "primary": "#000000",
+                        "on-tertiary": "#ffffff",
+                        "background": "#fcf8fa",
+                        "primary-container": "#131b2e",
+                        "primary-fixed-dim": "#bec6e0",
+                        "on-secondary-fixed": "#00174b",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#131b2e",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#98805d",
+                        "surface-dim": "#dcd9db",
+                        "outline-variant": "#c6c6cd",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "inverse-primary": "#bec6e0",
+                        "surface-tint": "#565e74",
+                        "surface-container-highest": "#e4e2e4",
+                        "secondary-container": "#316bf3",
+                        "on-surface-variant": "#45464d",
+                        "on-primary-container": "#7c839b",
+                        "tertiary": "#000000",
+                        "on-secondary-container": "#fefcff",
+                        "tertiary-fixed": "#fcdeb5",
+                        "primary-fixed": "#dae2fd",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#fcf8fa",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#574425",
+                        "surface-container-low": "#f6f3f5",
+                        "secondary": "#0051d5",
+                        "inverse-on-surface": "#f3f0f2",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "on-surface": "#1b1b1d",
+                        "inverse-surface": "#303032",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#003ea8",
+                        "tertiary-container": "#271901",
+                        "secondary-fixed": "#dbe1ff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#dec29a",
+                        "surface-container": "#f0edef",
+                        "income": "#166534",
+                        "expense": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "container-margin-desktop": "80px",
+                        "container-margin-mobile": "16px",
+                        "base": "4px",
+                        "sm": "8px",
+                        "gutter": "16px",
+                        "2xl": "48px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "label-sm": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "display-lg-mobile": ["Manrope"],
+                        "headline-sm": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "label-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg-mobile": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+    </style>
+<style id="custom-cursor" type="text/css">body button, body [type='button'], body input[type='reset'], body input[type='submit'], body [role="button"], ::-webkit-search-cancel-button, ::-webkit-search-decoration, ::-webkit-scrollbar-button, ::-webkit-file-upload-button, [role^=button], .cc_pointer, [type="search"]::-webkit-search-cancel-button, a, select, [type="search"]::-webkit-search-decoration, .paper-button, .ytp-progress-bar-container, input[type=submit], :link, :visited, a > *, img,  ::-webkit-scrollbar-button, .ogdlpmhglpejoiomcodnpjnfgcpmgale_pointer, ::-webkit-file-upload-button, .ytp-volume-panel, #myogdlpmhglpejoiomcodnpjnfgcpmgale .icon, body .custom-cursor-on-hover {cursor: url("data:image/png;base64,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") 12 0, pointer !important;} html,body,body select,body .custom-cursor-default-hover {cursor: url("data:image/png;base64,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") 0 0, auto !important;}</style></head>
+<body class="bg-background text-on-background min-h-screen font-body-md flex">
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden md:flex flex-col py-lg space-y-sm bg-surface h-screen w-64 fixed left-0 top-0 border-r border-outline-variant flat no shadows z-40">
+<div class="px-lg pb-md flex items-center space-x-sm border-b border-outline-variant mb-md">
+<span class="font-headline-sm text-headline-sm text-primary font-bold">ReFinance</span>
+</div>
+<div class="px-lg pb-sm">
+<div class="flex items-center space-x-sm">
+<img alt="User Profile" class="w-10 h-10 rounded-full" data-alt="A small circular avatar placeholder image with a random colored background and white initials, representing a user profile picture in a sleek, minimalist finance application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVNYlgwGmmb_SlNzJ4kKe3_p6Zvd2IF8wTKm48YJqcwZkxeauivB-TOvaa8WffuCM4YD7BPy8ZFK3aHs6hCK-M3L0gsheAlgE4dtrZx46aT8D2vOi_X0zjnf1cE3qsc1h89kXczuVc9b8Dfu5vZz8ybffA30GeCn6qWKH4xluXpoz0GReVOuJ4IkC8VQpsQgv4QAjgOgy5_el7sXvCOGrzVx-3rLIgmRK2mbc4JAGQfEIcTxAIZCLEHETMfYuh6iDaMirBYNaES5w">
+<div>
+<p class="font-label-md text-label-md text-on-background">Personal Assistant</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Managing Wealth</p>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-sm space-y-xs">
+<a class="flex items-center px-md py-sm rounded-lg hover:bg-surface-container-low transition-all text-on-surface-variant group" href="#">
+<span class="material-symbols-outlined mr-md">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center px-md py-sm rounded-lg hover:bg-surface-container-low transition-all text-secondary font-bold border-r-4 border-secondary bg-surface-container-lowest group" href="#">
+<span class="material-symbols-outlined mr-md" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<span class="font-label-md text-label-md">Transaksi</span>
+</a>
+<a class="flex items-center px-md py-sm rounded-lg hover:bg-surface-container-low transition-all text-on-surface-variant group" href="#">
+<span class="material-symbols-outlined mr-md">category</span>
+<span class="font-label-md text-label-md">Kategori</span>
+</a>
+<a class="flex items-center px-md py-sm rounded-lg hover:bg-surface-container-low transition-all text-on-surface-variant group" href="#">
+<span class="material-symbols-outlined mr-md">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Budget</span>
+</a>
+<a class="flex items-center px-md py-sm rounded-lg hover:bg-surface-container-low transition-all text-on-surface-variant group" href="#">
+<span class="material-symbols-outlined mr-md">account_balance</span>
+<span class="font-label-md text-label-md">Wallets</span>
+</a>
+<a class="flex items-center px-md py-sm rounded-lg hover:bg-surface-container-low transition-all text-on-surface-variant group" href="#">
+<span class="material-symbols-outlined mr-md">track_changes</span>
+<span class="font-label-md text-label-md">Goals</span>
+</a>
+<a class="flex items-center px-md py-sm rounded-lg hover:bg-surface-container-low transition-all text-on-surface-variant group" href="#">
+<span class="material-symbols-outlined mr-md">assessment</span>
+<span class="font-label-md text-label-md">Laporan</span>
+</a>
+<a class="flex items-center px-md py-sm rounded-lg hover:bg-surface-container-low transition-all text-on-surface-variant group" href="#">
+<span class="material-symbols-outlined mr-md">trending_up</span>
+<span class="font-label-md text-label-md">Market</span>
+</a>
+<a class="flex items-center px-md py-sm rounded-lg hover:bg-surface-container-low transition-all text-on-surface-variant group" href="#">
+<span class="material-symbols-outlined mr-md">settings</span>
+<span class="font-label-md text-label-md">Pengaturan</span>
+</a>
+</div>
+</nav>
+<!-- TopNavBar (Mobile only) -->
+<nav class="md:hidden fixed top-0 left-0 w-full z-50 flex justify-between items-center px-container-margin-mobile h-16 bg-surface border-b border-outline-variant flat no shadows">
+<span class="font-headline-md text-headline-md text-primary font-bold">ReFinance</span>
+<div class="flex space-x-sm text-primary">
+<button class="p-2 hover:bg-surface-container transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</nav>
+<!-- BottomNavBar (Mobile only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 bg-surface px-4 pb-safe border-t border-outline-variant shadow-lg rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:text-secondary hover:opacity-100 transition-colors active:scale-90 duration-150 p-2" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary font-bold active:scale-90 duration-150 p-2" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">list_alt</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:text-secondary hover:opacity-100 transition-colors active:scale-90 duration-150 p-2" href="#">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">Add</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:text-secondary hover:opacity-100 transition-colors active:scale-90 duration-150 p-2" href="#">
+<span class="material-symbols-outlined">stars</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">Goals</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:text-secondary hover:opacity-100 transition-colors active:scale-90 duration-150 p-2" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">Settings</span>
+</a>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 pt-20 md:pt-0 pb-20 md:pb-0 min-h-screen bg-background">
+<div class="max-w-[1200px] mx-auto p-container-margin-mobile md:p-container-margin-desktop">
+<!-- Header -->
+<header class="flex justify-between items-center mb-xl">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-background">Transaksi</h1>
+<button class="mr-sm border border-outline-variant text-on-surface-variant px-lg py-sm rounded-full font-label-md text-label-md flex items-center hover:bg-surface-container transition-colors shadow-sm">
+<span class="material-symbols-outlined mr-2">document_scanner</span>
+                    Scan Struk
+                </button><button class="bg-primary text-on-primary px-lg py-sm rounded-full font-label-md text-label-md flex items-center hover:bg-surface-tint transition-colors shadow-sm">
+<span class="material-symbols-outlined mr-2">add</span>
+                    Tambah
+                </button>
+</header>
+<!-- Filters & Search -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-md mb-lg">
+<div class="flex flex-wrap gap-sm">
+<button class="px-md py-sm rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface-variant font-label-md text-label-md flex items-center hover:border-secondary transition-colors">
+                        Bulan Ini
+                        <span class="material-symbols-outlined ml-2 text-[18px]">expand_more</span>
+</button>
+<button class="px-md py-sm rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface-variant font-label-md text-label-md flex items-center hover:border-secondary transition-colors">
+                        Semua Kategori
+                        <span class="material-symbols-outlined ml-2 text-[18px]">expand_more</span>
+</button>
+</div>
+<div class="relative w-full md:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 rounded-full border border-outline-variant bg-surface-container-lowest font-body-sm text-body-sm focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all" placeholder="Cari transaksi..." type="text">
+</div>
+</div>
+<!-- Transaction List (Bento-ish Grid layout for items) -->
+<div class="space-y-4">
+<!-- Transaction Item (Expense) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-md hover:border-secondary transition-colors group">
+<div class="flex items-center gap-md w-full sm:w-auto">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:bg-secondary-container group-hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm text-on-background">Makan Siang</p>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm mt-1">
+<span class="">24 Okt 2023</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="">E-Wallet</span>
+</div>
+</div>
+</div>
+<div class="text-right w-full sm:w-auto">
+<p class="font-headline-sm text-headline-sm text-expense">- Rp 150.000</p>
+</div>
+</div>
+<!-- Transaction Item (Income with Special Feature) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-md hover:border-secondary transition-colors group relative overflow-hidden">
+<div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-surface-container-low to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+<div class="flex items-center gap-md w-full sm:w-auto">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:bg-secondary-container group-hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">work</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm text-on-background">Gaji Bulanan</p>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm mt-1">
+<span class="">25 Okt 2023</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="">Bank BCA</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end w-full sm:w-auto mt-sm sm:mt-0">
+<p class="font-headline-sm text-headline-sm text-income">+ Rp 15.000.000</p>
+<!-- Special Feature: USD Depreciation Badge -->
+<div class="mt-2 inline-flex items-center px-2 py-1 rounded bg-error-container text-on-error-container font-label-sm text-label-sm gap-1 cursor-help" title="Penurunan nilai Rupiah terhadap USD sejak tanggal transaksi ini.">
+<span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+                            6,25% vs USD
+                        </div>
+</div>
+</div>
+<!-- Transaction Item (Expense) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-md hover:border-secondary transition-colors group">
+<div class="flex items-center gap-md w-full sm:w-auto">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:bg-secondary-container group-hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">local_gas_station</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm text-on-background">Bensin Mobil</p>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm mt-1">
+<span class="">22 Okt 2023</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="">Tunai</span>
+</div>
+</div>
+</div>
+<div class="text-right w-full sm:w-auto">
+<p class="font-headline-sm text-headline-sm text-expense">- Rp 350.000</p>
+</div>
+</div>
+<!-- Transaction Item (Income with Special Feature) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-md hover:border-secondary transition-colors group relative overflow-hidden">
+<div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-surface-container-low to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+<div class="flex items-center gap-md w-full sm:w-auto">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:bg-secondary-container group-hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">sell</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm text-on-background">Jual Barang Bekas</p>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm mt-1">
+<span class="">20 Okt 2023</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="">Tunai</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end w-full sm:w-auto mt-sm sm:mt-0">
+<p class="font-headline-sm text-headline-sm text-income">+ Rp 500.000</p>
+<!-- Special Feature: USD Depreciation Badge -->
+<div class="mt-2 inline-flex items-center px-2 py-1 rounded bg-error-container text-on-error-container font-label-sm text-label-sm gap-1 cursor-help" title="Penurunan nilai Rupiah terhadap USD sejak tanggal transaksi ini.">
+<span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+                            1,12% vs USD
+                        </div>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+
+</body></html>

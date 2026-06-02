@@ -1,0 +1,419 @@
+{% extends "base.html" %}
+
+{% block title %}Tabungan & Goal{% endblock %}
+{% block page_title %}Tabungan & Goal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Tabungan & Goal</h2>
+    <p class="page-subtitle">Wujudkan impianmu dengan menabung secara konsisten</p>
+  </div>
+  <button class="btn btn-primary" onclick="bukaModalTambahGoal()">
+    <span class="material-symbols-outlined">add</span>
+    Tambah Goal
+  </button>
+</div>
+
+<!-- Pesan error/sukses -->
+<div id="pesan-goal"></div>
+
+<!-- ===== Grid Goal Cards ===== -->
+<div class="grid-3" id="grid-goals">
+  <div class="text-muted text-sm">Memuat goal...</div>
+</div>
+
+<!-- ===== Modal Tambah / Edit Goal ===== -->
+<div class="modal-overlay" id="modal-tambah-goal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-goal-judul">Tambah Goal Tabungan</h3>
+      <button class="modal-close" onclick="closeModal('modal-tambah-goal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="error-modal-goal" style="display:none;" class="alert alert-danger mb-3"></div>
+
+      <form id="form-goal">
+        <input type="hidden" id="gl-id" value="">
+
+        <div class="form-group">
+          <label class="form-label" for="gl-nama">Nama Goal</label>
+          <input class="form-control" type="text" id="gl-nama" name="name"
+                 placeholder="Misal: Laptop Baru, Liburan..." required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="gl-target">Jumlah Target (Rp)</label>
+            <input class="form-control" type="number" id="gl-target" name="target_amount"
+                   placeholder="0" min="1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="gl-deadline">Deadline</label>
+            <input class="form-control" type="date" id="gl-deadline" name="deadline">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="gl-tabungan">Tabungan Awal (Rp)</label>
+          <input class="form-control" type="number" id="gl-tabungan" name="saved_amount"
+                 placeholder="0" min="0" value="0">
+        </div>
+
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-tambah-goal')">Batal</button>
+      <button class="btn btn-primary" id="btn-simpan-goal" onclick="simpanGoal()">
+        <span class="material-symbols-outlined">save</span>
+        Simpan
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal Setor Dana ===== -->
+<div class="modal-overlay" id="modal-setor-goal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-setor-judul">Setor Dana</h3>
+      <button class="modal-close" onclick="closeModal('modal-setor-goal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="error-modal-setor" style="display:none;" class="alert alert-danger mb-3"></div>
+      <input type="hidden" id="setor-goal-id" value="">
+      <input type="hidden" id="setor-saved-current" value="0">
+
+      <!-- Info progress goal yang dipilih -->
+      <div id="info-setor-goal" style="display:flex; align-items:center; gap:1rem; padding:1rem; background:var(--bg); border-radius:var(--radius-btn); margin-bottom:1rem;">
+      </div>
+
+      <form id="form-setor">
+        <div class="form-group">
+          <label class="form-label" for="setor-jumlah">Jumlah Setoran (Rp)</label>
+          <input class="form-control" type="number" id="setor-jumlah" name="amount"
+                 placeholder="0" min="1" required>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-setor-goal')">Batal</button>
+      <button class="btn btn-accent" id="btn-setor-goal" onclick="simpanSetoran()">
+        <span class="material-symbols-outlined">savings</span>
+        Setor Sekarang
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Keliling SVG progress ring: 2 * π * r (r=34) ≈ 213.63
+const CIRCUMFERENCE = 2 * Math.PI * 34;
+
+/**
+ * Muat semua goal dari API dan render kartu.
+ */
+async function muatGoal() {
+  const pesanEl = document.getElementById('pesan-goal');
+  const grid = document.getElementById('grid-goals');
+  pesanEl.innerHTML = '';
+  grid.innerHTML = '<div class="text-muted text-sm">Memuat...</div>';
+
+  try {
+    const goals = await apiGet('/api/goals');
+
+    if (!goals || goals.length === 0) {
+      grid.innerHTML = '<div class="text-muted text-sm">Belum ada goal tabungan. Klik "Tambah Goal" untuk memulai.</div>';
+      return;
+    }
+
+    grid.innerHTML = goals.map(g => renderKartuGoal(g)).join('');
+
+  } catch (err) {
+    grid.innerHTML = '';
+    pesanEl.innerHTML = `
+      <div class="alert alert-danger" style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+        <span class="material-symbols-outlined">error</span>
+        <span>${err.message}</span>
+      </div>`;
+  }
+}
+
+/**
+ * Hitung stroke-dashoffset untuk progress ring SVG.
+ * @param {number} persen - 0 sampai 100+
+ * @returns {number}
+ */
+function hitungOffset(persen) {
+  const p = Math.min(Math.max(persen, 0), 100) / 100;
+  return CIRCUMFERENCE * (1 - p);
+}
+
+/**
+ * Tentukan warna ring berdasarkan persen.
+ * @param {number} persen
+ * @returns {string} CSS variable
+ */
+function warnaRing(persen) {
+  if (persen >= 100) return 'var(--pos)';
+  if (persen >= 60) return 'var(--accent)';
+  if (persen >= 30) return 'var(--warning)';
+  return 'var(--neg)';
+}
+
+/**
+ * Render kartu satu goal.
+ */
+function renderKartuGoal(g) {
+  const persen = g.progress_persen || 0;
+  const offset = hitungOffset(persen).toFixed(1);
+  const warna = warnaRing(persen);
+  const deadline = g.deadline
+    ? new Date(g.deadline + 'T00:00:00').toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
+    : 'Tanpa batas';
+  const estimasi = g.estimasi_per_bulan
+    ? `~${formatRupiah(g.estimasi_per_bulan)}/bln`
+    : '';
+
+  return `
+    <div class="goal-card">
+      <div class="goal-card-top">
+        <div class="goal-card-info">
+          <div class="goal-card-name">${escHtml(g.name)}</div>
+          <div class="goal-card-amounts">
+            <div class="goal-amount-item">
+              <span class="goal-amount-label">Terkumpul</span>
+              <span class="goal-amount-value accent">${formatRupiah(g.saved_amount)}</span>
+            </div>
+            <div class="goal-amount-item">
+              <span class="goal-amount-label">Target</span>
+              <span class="goal-amount-value">${formatRupiah(g.target_amount)}</span>
+            </div>
+          </div>
+        </div>
+        <!-- Progress Ring SVG -->
+        <div class="goal-card-ring">
+          <div class="progress-ring-wrap">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="34"
+                fill="none" stroke="var(--border)" stroke-width="8" />
+              <circle cx="40" cy="40" r="34"
+                fill="none"
+                stroke="${warna}"
+                stroke-width="8"
+                stroke-linecap="round"
+                stroke-dasharray="${CIRCUMFERENCE.toFixed(1)}"
+                stroke-dashoffset="${offset}"
+                transform="rotate(-90 40 40)"
+              />
+            </svg>
+            <span class="ring-label">${persen.toFixed(0)}%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar safe" style="width:${Math.min(persen, 100).toFixed(1)}%; background-color:${warna};"></div>
+      </div>
+
+      <div class="goal-card-footer">
+        <div class="goal-deadline">
+          <span class="material-symbols-outlined">schedule</span>
+          Target: ${escHtml(deadline)}${estimasi ? ' · ' + estimasi : ''}
+        </div>
+        <div style="display:flex; gap:0.375rem;">
+          <button class="btn btn-accent btn-sm" onclick="bukaModalSetor(${g.id})">
+            <span class="material-symbols-outlined">add</span>
+            Setor
+          </button>
+          <button class="btn-icon" onclick="editGoal(${g.id})" title="Edit">
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+          <button class="btn-icon" onclick="hapusGoal(${g.id})" title="Hapus" style="color:var(--neg);">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/**
+ * Buka modal tambah goal baru.
+ */
+function bukaModalTambahGoal() {
+  document.getElementById('modal-goal-judul').textContent = 'Tambah Goal Tabungan';
+  document.getElementById('gl-id').value = '';
+  document.getElementById('form-goal').reset();
+  document.getElementById('gl-tabungan').value = '0';
+  document.getElementById('error-modal-goal').style.display = 'none';
+  openModal('modal-tambah-goal');
+}
+
+/**
+ * Edit goal — isi form.
+ */
+async function editGoal(id) {
+  try {
+    const goals = await apiGet('/api/goals');
+    const g = goals.find(x => x.id === id);
+    if (!g) { alert('Goal tidak ditemukan.'); return; }
+
+    document.getElementById('modal-goal-judul').textContent = 'Edit Goal';
+    document.getElementById('gl-id').value = g.id;
+    document.getElementById('gl-nama').value = g.name;
+    document.getElementById('gl-target').value = g.target_amount;
+    document.getElementById('gl-deadline').value = g.deadline || '';
+    document.getElementById('gl-tabungan').value = g.saved_amount;
+    document.getElementById('error-modal-goal').style.display = 'none';
+    openModal('modal-tambah-goal');
+
+  } catch (err) {
+    alert('Gagal memuat data: ' + err.message);
+  }
+}
+
+/**
+ * Hapus goal setelah konfirmasi.
+ */
+async function hapusGoal(id) {
+  if (!confirm('Hapus goal ini?')) return;
+  try {
+    await apiDelete(`/api/goals/${id}`);
+    await muatGoal();
+  } catch (err) {
+    alert('Gagal menghapus: ' + err.message);
+  }
+}
+
+/**
+ * Simpan goal (create atau update).
+ */
+async function simpanGoal() {
+  const errEl = document.getElementById('error-modal-goal');
+  errEl.style.display = 'none';
+
+  const id = document.getElementById('gl-id').value;
+  const nama = document.getElementById('gl-nama').value.trim();
+  const target = parseInt(document.getElementById('gl-target').value, 10);
+  const deadline = document.getElementById('gl-deadline').value || null;
+  const savedAmount = parseInt(document.getElementById('gl-tabungan').value, 10) || 0;
+
+  if (!nama) {
+    errEl.textContent = 'Nama goal wajib diisi.';
+    errEl.style.display = '';
+    return;
+  }
+  if (!target || target <= 0) {
+    errEl.textContent = 'Jumlah target harus lebih dari 0.';
+    errEl.style.display = '';
+    return;
+  }
+
+  const payload = { name: nama, target_amount: target, deadline, saved_amount: savedAmount };
+  const btn = document.getElementById('btn-simpan-goal');
+  btn.disabled = true;
+
+  try {
+    if (id) {
+      await apiPut(`/api/goals/${id}`, payload);
+    } else {
+      await apiPost('/api/goals', payload);
+    }
+    closeModal('modal-tambah-goal');
+    await muatGoal();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/**
+ * Buka modal setor dana untuk goal tertentu.
+ */
+async function bukaModalSetor(id) {
+  try {
+    const goals = await apiGet('/api/goals');
+    const g = goals.find(x => x.id === id);
+    if (!g) { alert('Goal tidak ditemukan.'); return; }
+
+    document.getElementById('setor-goal-id').value = g.id;
+    document.getElementById('setor-saved-current').value = g.saved_amount;
+    document.getElementById('modal-setor-judul').textContent = `Setor Dana — ${g.name}`;
+    document.getElementById('setor-jumlah').value = '';
+    document.getElementById('error-modal-setor').style.display = 'none';
+
+    // Info progress
+    const persen = g.progress_persen || 0;
+    const offset = hitungOffset(persen).toFixed(1);
+    document.getElementById('info-setor-goal').innerHTML = `
+      <div class="progress-ring-wrap">
+        <svg width="56" height="56" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="var(--border)" stroke-width="8" />
+          <circle cx="40" cy="40" r="34" fill="none" stroke="var(--accent)" stroke-width="8"
+            stroke-linecap="round" stroke-dasharray="${CIRCUMFERENCE.toFixed(1)}" stroke-dashoffset="${offset}"
+            transform="rotate(-90 40 40)" />
+        </svg>
+        <span class="ring-label" style="font-size:0.625rem;">${persen.toFixed(0)}%</span>
+      </div>
+      <div>
+        <div class="fw-bold">${escHtml(g.name)}</div>
+        <div class="text-sm text-muted">${formatRupiah(g.saved_amount)} / ${formatRupiah(g.target_amount)}</div>
+      </div>`;
+
+    openModal('modal-setor-goal');
+  } catch (err) {
+    alert('Gagal memuat data: ' + err.message);
+  }
+}
+
+/**
+ * Simpan setoran — update saved_amount goal.
+ */
+async function simpanSetoran() {
+  const errEl = document.getElementById('error-modal-setor');
+  errEl.style.display = 'none';
+
+  const id = document.getElementById('setor-goal-id').value;
+  const current = parseInt(document.getElementById('setor-saved-current').value, 10) || 0;
+  const tambahan = parseInt(document.getElementById('setor-jumlah').value, 10);
+
+  if (!tambahan || tambahan <= 0) {
+    errEl.textContent = 'Jumlah setoran harus lebih dari 0.';
+    errEl.style.display = '';
+    return;
+  }
+
+  const newSaved = current + tambahan;
+  const btn = document.getElementById('btn-setor-goal');
+  btn.disabled = true;
+
+  try {
+    await apiPut(`/api/goals/${id}`, { saved_amount: newSaved });
+    closeModal('modal-setor-goal');
+    await muatGoal();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', muatGoal);
+</script>
+{% endblock %}

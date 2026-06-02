@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ReFinance - Tambah Transaksi</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for modern look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #dcd9db; /* surface-dim */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c6c6cd; /* outline-variant */
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#1b1b1d",
+                        "inverse-surface": "#303032",
+                        "tertiary-fixed": "#fcdeb5",
+                        "on-tertiary-fixed": "#271901",
+                        "surface-tint": "#565e74",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#dec29a",
+                        "on-surface-variant": "#45464d",
+                        "tertiary-container": "#271901",
+                        "on-secondary-fixed": "#00174b",
+                        "on-tertiary-fixed-variant": "#574425",
+                        "on-secondary": "#ffffff",
+                        "background": "#fcf8fa",
+                        "primary": "#000000",
+                        "on-background": "#1b1b1d",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-bright": "#fcf8fa",
+                        "outline": "#76777d",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#dae2fd",
+                        "outline-variant": "#c6c6cd",
+                        "surface-container-high": "#eae7e9",
+                        "on-secondary-fixed-variant": "#003ea8",
+                        "on-primary-fixed": "#131b2e",
+                        "surface-container": "#f0edef",
+                        "primary-container": "#131b2e",
+                        "surface-variant": "#e4e2e4",
+                        "surface-dim": "#dcd9db",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "on-primary-container": "#7c839b",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f3f0f2",
+                        "secondary-container": "#316bf3",
+                        "surface-container-highest": "#e4e2e4",
+                        "on-error": "#ffffff",
+                        "surface": "#fcf8fa",
+                        "inverse-primary": "#bec6e0",
+                        "on-tertiary-container": "#98805d",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#000000",
+                        "secondary-fixed": "#dbe1ff",
+                        "on-secondary-container": "#fefcff",
+                        "surface-container-low": "#f6f3f5",
+                        "secondary": "#0051d5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin-desktop": "80px",
+                        "xl": "32px",
+                        "xs": "4px",
+                        "2xl": "48px",
+                        "sm": "8px",
+                        "base": "4px",
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "container-margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "headline-sm": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "body-sm": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "label-sm": ["Manrope"],
+                        "display-lg-mobile": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "fontWeight": "500" }],
+                        "display-lg-mobile": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-hidden">
+<!-- Underlying Context (Blurred out dashboard to show it's a modal) -->
+<div class="fixed inset-0 z-0 opacity-40 blur-sm pointer-events-none" style="background-image: linear-gradient(to right top, #fcf8fa, #f0edef, #e4e2e4, #dcd9db); background-size: cover;">
+<!-- Simulated Dashboard Layout -->
+<div class="max-w-[1200px] mx-auto px-container-margin-mobile md:px-container-margin-desktop py-lg">
+<div class="h-32 bg-surface-container rounded-xl mb-lg"></div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="h-64 bg-surface-container rounded-xl col-span-2"></div>
+<div class="h-64 bg-surface-container rounded-xl"></div>
+</div>
+</div>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/80 backdrop-blur-sm p-container-margin-mobile">
+<!-- Modal Container -->
+<div class="w-full max-w-md bg-surface rounded-xl shadow-[0px_4px_12px_rgba(15,23,42,0.05)] border border-outline-variant flex flex-col max-h-[921px] overflow-hidden transform transition-all scale-100 opacity-100" id="transactionModal">
+<!-- Modal Header -->
+<div class="flex items-center justify-between px-lg py-md border-b border-outline-variant bg-surface-container-low">
+<h2 class="font-headline-sm text-headline-sm text-primary">Tambah Transaksi</h2>
+<button aria-label="Close modal" class="text-on-surface-variant hover:text-primary transition-colors p-sm rounded-full hover:bg-surface-container-highest">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<!-- Modal Body (Scrollable) -->
+<div class="flex-1 overflow-y-auto p-lg space-y-lg">
+<!-- Nominal Input -->
+<div class="text-center">
+<label class="sr-only" for="amount">Nominal Transaksi</label>
+<div class="relative inline-block w-full">
+<span class="absolute left-0 top-1/2 -translate-y-1/2 font-headline-sm text-headline-sm text-on-surface-variant pl-md">Rp</span>
+<input class="w-full bg-transparent font-display-lg-mobile text-display-lg-mobile text-primary text-center py-sm border-none focus:ring-0 focus:outline-none placeholder-outline-variant" id="amount" placeholder="0" type="text" value="0"/>
+</div>
+<div class="h-px bg-outline-variant w-3/4 mx-auto mt-xs"></div>
+</div>
+<!-- Type Segment Control -->
+<div class="bg-surface-container p-xs rounded-lg flex w-full">
+<button class="flex-1 py-sm font-label-md text-label-md rounded-md bg-surface shadow-sm text-primary transition-all">Pengeluaran</button>
+<button class="flex-1 py-sm font-label-md text-label-md rounded-md text-on-surface-variant hover:text-primary transition-all">Pemasukan</button>
+</div>
+<!-- Form Fields Grid -->
+<div class="space-y-md">
+<!-- Date Picker -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs" for="date">Tanggal</label>
+<div class="relative">
+<span class="absolute left-md top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant" data-icon="calendar_today">calendar_today</span>
+<input class="w-full pl-2xl pr-md py-sm bg-surface border border-outline-variant rounded-lg font-body-md text-body-md text-primary focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-colors" id="date" type="date" value="2023-10-24"/>
+</div>
+</div>
+<!-- Category Dropdown -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs" for="category">Kategori</label>
+<div class="relative">
+<span class="absolute left-md top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant" data-icon="category">category</span>
+<select class="w-full pl-2xl pr-md py-sm bg-surface border border-outline-variant rounded-lg font-body-md text-body-md text-primary focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-colors appearance-none" id="category">
+<option disabled="" selected="" value="">Pilih Kategori</option>
+<option value="makan">Makan &amp; Minum</option>
+<option value="transport">Transportasi</option>
+<option value="belanja">Belanja</option>
+<option value="tagihan">Tagihan</option>
+</select>
+<span class="absolute right-md top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant pointer-events-none" data-icon="arrow_drop_down">arrow_drop_down</span>
+</div>
+</div>
+<!-- Wallet Dropdown -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs" for="wallet">Dompet</label>
+<div class="relative">
+<span class="absolute left-md top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant" data-icon="account_balance_wallet">account_balance_wallet</span>
+<select class="w-full pl-2xl pr-md py-sm bg-surface border border-outline-variant rounded-lg font-body-md text-body-md text-primary focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-colors appearance-none" id="wallet">
+<option value="tunai">Tunai</option>
+<option value="bca">Bank BCA</option>
+<option value="gopay">GoPay</option>
+<option value="ovo">OVO</option>
+</select>
+<span class="absolute right-md top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant pointer-events-none" data-icon="arrow_drop_down">arrow_drop_down</span>
+</div>
+</div>
+<!-- Notes Textarea -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs" for="notes">Catatan (Opsional)</label>
+<div class="relative">
+<span class="absolute left-md top-sm material-symbols-outlined text-on-surface-variant" data-icon="notes">notes</span>
+<textarea class="w-full pl-2xl pr-md py-sm bg-surface border border-outline-variant rounded-lg font-body-md text-body-md text-primary focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-colors resize-none placeholder-outline" id="notes" placeholder="Tambahkan deskripsi singkat..." rows="3"></textarea>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="p-lg border-t border-outline-variant bg-surface-container-lowest flex gap-md">
+<button class="flex-1 py-sm px-md border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-outline-variant">
+                    Batal
+                </button>
+<button class="flex-1 py-sm px-md bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                    Simpan
+                </button>
+</div>
+</div>
+</div>
+<script>
+        // Simple script to format number input as currency
+        const amountInput = document.getElementById('amount');
+        amountInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value === '') {
+                e.target.value = '0';
+                return;
+            }
+            value = parseInt(value, 10).toLocaleString('id-ID');
+            e.target.value = value;
+        });
+
+        // Focus amount input on load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => amountInput.focus(), 100);
+        });
+    </script>
+</body></html>

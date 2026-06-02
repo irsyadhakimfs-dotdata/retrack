@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+
+{% block title %}Kurs & Emas{% endblock %}
+{% block page_title %}Kurs & Emas{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Kurs & Harga Emas</h2>
+    <p class="page-subtitle">Pantau nilai tukar USD/IDR &amp; emas · diperbarui otomatis tiap {{ refresh_hours }} jam</p>
+  </div>
+  <button class="btn btn-outline" id="btn-refresh" onclick="refreshMarket()">
+    <span class="material-symbols-outlined">refresh</span>
+    Perbarui Data
+  </button>
+</div>
+
+<!-- ===== Ringkasan: dua kartu hero ===== -->
+<div class="grid-2 mb-4">
+
+  <!-- Hero Kurs USD/IDR -->
+  <div class="stat-card">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div class="stat-card-label">
+        <span class="material-symbols-outlined">currency_exchange</span>
+        Kurs USD / IDR
+      </div>
+      <span class="source-badge" id="usd-source"><span class="dot"></span>—</span>
+    </div>
+    <div class="market-hero">
+      <div class="market-hero-value skeleton" id="usd-rate-label">000.000</div>
+      <span class="market-hero-unit">per 1 USD</span>
+    </div>
+    <div class="stat-card-change" id="usd-change">Memuat perubahan…</div>
+    <div class="text-muted" style="font-size:0.7rem; margin-top:0.35rem;" id="usd-updated"></div>
+  </div>
+
+  <!-- Hero Emas -->
+  <div class="stat-card">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div class="stat-card-label">
+        <span class="material-symbols-outlined" style="color:#D97706;">workspace_premium</span>
+        Harga Emas
+      </div>
+      <span class="source-badge" id="gold-source"><span class="dot"></span>—</span>
+    </div>
+    <div class="market-hero">
+      <div class="market-hero-value skeleton" id="gold-value">000.000.000</div>
+      <span class="market-hero-unit">per troy ounce</span>
+    </div>
+    <div class="stat-card-change" id="gold-sub">Sumber: Yahoo Finance (GC=F)</div>
+    <div class="text-muted" style="font-size:0.7rem; margin-top:0.35rem;" id="gold-updated"></div>
+  </div>
+
+</div>
+
+<!-- ===== Grafik Riwayat Kurs USD/IDR ===== -->
+<div class="card mb-4" id="card-usd-idr">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Riwayat Kurs USD / IDR</div>
+      <div class="card-subtitle" id="usd-subtitle">Memuat riwayat…</div>
+    </div>
+    <!-- Pemilih rentang waktu grafik -->
+    <div class="segmented" id="range-selector">
+      <button class="segmented-btn" data-months="1" onclick="gantiRentang(1)">1B</button>
+      <button class="segmented-btn active" data-months="3" onclick="gantiRentang(3)">3B</button>
+      <button class="segmented-btn" data-months="6" onclick="gantiRentang(6)">6B</button>
+    </div>
+  </div>
+
+  <!-- Canvas untuk line chart -->
+  <div id="chart-usd-container" style="position:relative; height:260px; margin-top:0.5rem;">
+    <canvas id="chart-usd-idr"></canvas>
+  </div>
+
+  <!-- Statistik ringkas min / rata-rata / maks -->
+  <div class="stat-strip" id="usd-stats" style="display:none;">
+    <div class="stat-strip-item">
+      <div class="stat-strip-label">Terendah</div>
+      <div class="stat-strip-value" id="usd-min">—</div>
+    </div>
+    <div class="stat-strip-item">
+      <div class="stat-strip-label">Rata-rata</div>
+      <div class="stat-strip-value" id="usd-avg">—</div>
+    </div>
+    <div class="stat-strip-item">
+      <div class="stat-strip-label">Tertinggi</div>
+      <div class="stat-strip-value" id="usd-max">—</div>
+    </div>
+  </div>
+
+  <!-- Pesan fallback bila data tidak cukup -->
+  <div id="usd-fallback" class="empty-state" style="display:none;">
+    <span class="material-symbols-outlined">wifi_off</span>
+    <div class="empty-state-title">Riwayat kurs belum tersedia</div>
+    <div class="empty-state-desc">Sumber data sedang sibuk — coba perbarui beberapa saat lagi.</div>
+  </div>
+</div>
+
+<!-- ===== Grafik Riwayat Harga Emas ===== -->
+<div class="card mb-4" id="card-gold">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Riwayat Harga Emas (per gram)</div>
+      <div class="card-subtitle" id="gold-subtitle">Memuat riwayat…</div>
+    </div>
+    <div class="segmented" id="gold-range-selector">
+      <button class="segmented-btn" data-months="1" onclick="gantiRentangEmas(1)">1B</button>
+      <button class="segmented-btn active" data-months="3" onclick="gantiRentangEmas(3)">3B</button>
+      <button class="segmented-btn" data-months="6" onclick="gantiRentangEmas(6)">6B</button>
+    </div>
+  </div>
+
+  <div id="chart-gold-container" style="position:relative; height:260px; margin-top:0.5rem;">
+    <canvas id="chart-gold"></canvas>
+  </div>
+
+  <div id="gold-fallback" class="empty-state" style="display:none;">
+    <span class="material-symbols-outlined">wifi_off</span>
+    <div class="empty-state-title">Riwayat harga emas belum tersedia</div>
+    <div class="empty-state-desc">Sumber data sedang sibuk — coba perbarui beberapa saat lagi.</div>
+  </div>
+</div>
+
+<!-- ===== Penjelasan Erosi Nilai ===== -->
+<div class="card mb-4">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Apa itu Erosi Nilai?</div>
+      <div class="card-subtitle">Mengapa kurs penting untuk keuanganmu</div>
+    </div>
+    <span class="material-symbols-outlined" style="font-size: 2rem; color: var(--accent);">info</span>
+  </div>
+  <div class="grid-2" style="gap: 1.5rem;">
+    <div>
+      <p class="text-sm" style="line-height: 1.75; color: var(--text-2); margin-bottom: 0.75rem;">
+        <strong style="color: var(--text);">Erosi nilai</strong> terjadi ketika daya beli uang rupiah berkurang
+        akibat kenaikan kurs USD/IDR. Meski nominalmu tidak berubah, nilai riilnya turun bila dihitung
+        dalam dolar.
+      </p>
+      <p class="text-sm" style="line-height: 1.75; color: var(--text-2);">
+        ReFinance menghitung erosi nilai untuk setiap transaksi pemasukan berdasarkan perubahan kurs
+        saat transaksi diterima hingga sekarang. Diukur terhadap USD, bukan inflasi domestik.
+      </p>
+    </div>
+    <div style="background: var(--bg); border-radius: var(--radius-btn); padding: 1.25rem;">
+      <div class="text-sm fw-bold mb-2">Contoh:</div>
+      <div class="text-sm text-muted" style="line-height: 1.75;">
+        Kamu menerima gaji <strong style="color: var(--text);">Rp 6.500.000</strong>
+        saat kurs <strong style="color: var(--text);">Rp 15.800/USD</strong>
+        (≈ <strong style="color: var(--text);">$411 USD</strong>).
+      </div>
+      <div class="divider" style="margin: 0.75rem 0;"></div>
+      <div class="text-sm text-muted" style="line-height: 1.75;">
+        Sebulan kemudian kurs naik jadi <strong style="color: var(--text);">Rp 16.164/USD</strong>,
+        nilai Rp 6.500.000-mu hanya setara <strong style="color: var(--neg);">$402 USD</strong>
+        — turun <strong style="color: var(--neg);">2,3%</strong>.
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Interval auto-refresh dari konfigurasi server (jam → milidetik) -->
+<script>
+  const MARKET_REFRESH_MS = {{ refresh_hours }} * 60 * 60 * 1000;
+</script>
+
+<script>
+// Referensi chart aktif agar bisa di-destroy sebelum digambar ulang
+let _chartUsdIdr = null;
+let _chartGold = null;
+// Rentang grafik aktif (bulan)
+let _rangeBulan = 3;
+let _rangeEmasBulan = 3;
+
+/**
+ * Format timestamp ISO menjadi teks "Terakhir diperbarui …" yang ramah.
+ */
+function teksTerakhirUpdate(iso, cached) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const waktu = d.toLocaleString('id-ID', {
+    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+  });
+  return (cached ? 'Data tersimpan · ' : 'Terakhir diperbarui ') + waktu;
+}
+
+// Label sumber data yang ramah pengguna
+const LABEL_SUMBER = {
+  'yfinance': { teks: 'Yahoo Finance', kelas: 'live' },
+  'exchange-api': { teks: 'Live · API Kurs', kelas: 'live' },
+  'gold-api': { teks: 'Live · Gold API', kelas: 'live' },
+  'frankfurter': { teks: 'Frankfurter', kelas: 'live' },
+  'fallback': { teks: 'Data Tersimpan', kelas: 'cache' },
+  'unavailable': { teks: 'Tidak tersedia', kelas: '' },
+};
+
+/**
+ * Format angka rupiah tanpa desimal.
+ */
+function fmtRp(n) {
+  return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+}
+
+/**
+ * Set isi badge sumber data.
+ */
+function setSumber(elId, source) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const info = LABEL_SUMBER[source] || { teks: source || '—', kelas: '' };
+  el.className = 'source-badge ' + info.kelas;
+  el.innerHTML = `<span class="dot"></span>${info.teks}`;
+}
+
+/**
+ * Ganti rentang waktu grafik (dipanggil dari tombol segmented).
+ */
+function gantiRentang(bulan) {
+  _rangeBulan = bulan;
+  // Perbarui status tombol aktif
+  document.querySelectorAll('#range-selector .segmented-btn').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.months) === bulan);
+  });
+  muatChartKurs();
+}
+
+/**
+ * Muat riwayat kurs USD/IDR dan render line chart + statistik.
+ */
+async function muatChartKurs() {
+  const container = document.getElementById('chart-usd-container');
+  const fallback = document.getElementById('usd-fallback');
+  const subtitle = document.getElementById('usd-subtitle');
+  const statStrip = document.getElementById('usd-stats');
+
+  try {
+    const resp = await fetch(`/api/market/usd-idr/history?months=${_rangeBulan}`);
+    const body = await resp.json();
+    const history = body.ok ? body.data : [];
+
+    if (history.length < 2) {
+      container.style.display = 'none';
+      statStrip.style.display = 'none';
+      fallback.style.display = 'block';
+      subtitle.textContent = 'Data riwayat tidak tersedia';
+      return;
+    }
+
+    container.style.display = 'block';
+    statStrip.style.display = 'grid';
+    fallback.style.display = 'none';
+    subtitle.textContent = `${history.length} titik data · ${_rangeBulan} bulan terakhir`;
+
+    const labels = history.map(d => d.date);
+    const values = history.map(d => d.rate);
+
+    // Hitung statistik min / rata-rata / maks
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    document.getElementById('usd-min').textContent = fmtRp(min);
+    document.getElementById('usd-avg').textContent = fmtRp(avg);
+    document.getElementById('usd-max').textContent = fmtRp(max);
+
+    // Perubahan dari awal ke akhir periode → tampilkan di hero
+    tampilkanPerubahan(values[0], values[values.length - 1]);
+
+    // Destroy chart lama sebelum buat baru (cegah duplikasi)
+    if (_chartUsdIdr) {
+      _chartUsdIdr.destroy();
+      if (window._rfCharts) {
+        window._rfCharts = window._rfCharts.filter(c => c !== _chartUsdIdr);
+      }
+    }
+    _chartUsdIdr = initUsdIdrLineChart('chart-usd-idr', labels, values);
+
+  } catch {
+    container.style.display = 'none';
+    statStrip.style.display = 'none';
+    fallback.style.display = 'block';
+    subtitle.textContent = 'Gagal memuat riwayat kurs';
+  }
+}
+
+/**
+ * Ganti rentang waktu grafik emas.
+ */
+function gantiRentangEmas(bulan) {
+  _rangeEmasBulan = bulan;
+  document.querySelectorAll('#gold-range-selector .segmented-btn').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.months) === bulan);
+  });
+  muatChartEmas();
+}
+
+/**
+ * Muat riwayat harga emas (per gram) dan render line chart.
+ */
+async function muatChartEmas() {
+  const container = document.getElementById('chart-gold-container');
+  const fallback = document.getElementById('gold-fallback');
+  const subtitle = document.getElementById('gold-subtitle');
+
+  try {
+    const resp = await fetch(`/api/market/gold/history?months=${_rangeEmasBulan}`);
+    const body = await resp.json();
+    const history = body.ok ? body.data : [];
+
+    if (history.length < 2) {
+      container.style.display = 'none';
+      fallback.style.display = 'block';
+      subtitle.textContent = 'Data riwayat tidak tersedia';
+      return;
+    }
+
+    container.style.display = 'block';
+    fallback.style.display = 'none';
+    subtitle.textContent = `${history.length} titik data · ${_rangeEmasBulan} bulan terakhir`;
+
+    const labels = history.map(d => d.date);
+    const values = history.map(d => d.price_idr);
+
+    if (_chartGold) {
+      _chartGold.destroy();
+      if (window._rfCharts) window._rfCharts = window._rfCharts.filter(c => c !== _chartGold);
+    }
+    _chartGold = initGoldLineChart('chart-gold', labels, values);
+  } catch {
+    container.style.display = 'none';
+    fallback.style.display = 'block';
+    subtitle.textContent = 'Gagal memuat riwayat harga emas';
+  }
+}
+
+/**
+ * Tampilkan badge perubahan kurs (naik/turun) di kartu hero.
+ */
+function tampilkanPerubahan(awal, akhir) {
+  const el = document.getElementById('usd-change');
+  if (!el || !awal) return;
+  const delta = akhir - awal;
+  const pct = (delta / awal) * 100;
+  const naik = delta >= 0;
+  const panah = naik ? '▲' : '▼';
+  // Kurs USD naik = rupiah melemah (kabar kurang baik) → tandai merah
+  const warna = naik ? 'var(--neg)' : 'var(--pos)';
+  el.innerHTML = `<span style="color:${warna}; font-weight:700;">${panah} ${fmtRp(Math.abs(delta))} (${Math.abs(pct).toFixed(2)}%)</span> dalam ${_rangeBulan} bln`;
+}
+
+/**
+ * Muat kurs USD/IDR terkini dan tampilkan sebagai angka besar.
+ */
+async function muatKursTerkini() {
+  const el = document.getElementById('usd-rate-label');
+  try {
+    const resp = await fetch('/api/market/usd-idr');
+    const body = await resp.json();
+    el.classList.remove('skeleton');
+    if (body.ok && body.data.rate) {
+      el.textContent = Number(body.data.rate).toLocaleString('id-ID', { maximumFractionDigits: 0 });
+      setSumber('usd-source', body.data.source);
+      document.getElementById('usd-updated').textContent =
+        teksTerakhirUpdate(body.data.fetched_at, body.data.cached);
+    } else {
+      el.textContent = '—';
+      setSumber('usd-source', 'unavailable');
+    }
+  } catch {
+    el.classList.remove('skeleton');
+    el.textContent = '—';
+    setSumber('usd-source', 'unavailable');
+  }
+}
+
+/**
+ * Muat harga emas terkini.
+ */
+async function muatEmas() {
+  const elVal = document.getElementById('gold-value');
+  const elSub = document.getElementById('gold-sub');
+  try {
+    const resp = await fetch('/api/market/gold');
+    const body = await resp.json();
+    const data = body.ok ? body.data : null;
+    elVal.classList.remove('skeleton');
+
+    if (!data || data.price_idr === null) {
+      elVal.textContent = '—';
+      elSub.textContent = 'Data emas tidak tersedia';
+      setSumber('gold-source', 'unavailable');
+      return;
+    }
+
+    elVal.textContent = 'Rp ' + Number(data.price_idr).toLocaleString('id-ID');
+    elSub.textContent = 'Emas batangan internasional (XAU)';
+    setSumber('gold-source', data.source);
+    document.getElementById('gold-updated').textContent =
+      teksTerakhirUpdate(data.fetched_at, data.cached);
+  } catch {
+    elVal.classList.remove('skeleton');
+    elVal.textContent = '—';
+    elSub.textContent = 'Gagal memuat data emas';
+    setSumber('gold-source', 'unavailable');
+  }
+}
+
+/**
+ * Muat semua data market sekaligus.
+ */
+async function muatSemuaMarket() {
+  await Promise.allSettled([
+    muatChartKurs(),
+    muatChartEmas(),
+    muatKursTerkini(),
+    muatEmas(),
+  ]);
+}
+
+/**
+ * Tombol perbarui manual dengan animasi loading.
+ */
+async function refreshMarket() {
+  const btn = document.getElementById('btn-refresh');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="material-symbols-outlined" style="animation:spin 1s linear infinite;">refresh</span> Memuat…`;
+  }
+  try {
+    await muatSemuaMarket();
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<span class="material-symbols-outlined">refresh</span> Perbarui Data`;
+    }
+  }
+}
+
+// Muat data saat halaman siap
+document.addEventListener('DOMContentLoaded', function () {
+  muatSemuaMarket();
+  // Auto-refresh data stream tiap X jam (dari konfigurasi server)
+  setInterval(muatSemuaMarket, MARKET_REFRESH_MS);
+});
+</script>
+
+<style>
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+{% endblock %}
