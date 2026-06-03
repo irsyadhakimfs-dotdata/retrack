@@ -93,6 +93,32 @@
         <span class="material-symbols-outlined">dark_mode</span>
         <span class="toggle-label">Gelap</span>
       </button>
+
+      {% if current_user.is_authenticated %}
+      <!-- Menu profil (akun + logout) — tampil di SEMUA halaman, termasuk mobile -->
+      <div class="profile-menu" x-data="{ open: false }" @keydown.escape.window="open = false">
+        <button type="button" class="profile-avatar-btn" @click="open = !open"
+                :aria-expanded="open" aria-haspopup="true" aria-label="Menu akun">
+          <span class="profile-avatar">{{ (current_user.name or 'U')[0]|upper }}</span>
+          <span class="material-symbols-outlined profile-caret">arrow_drop_down</span>
+        </button>
+        <div class="profile-dropdown glass-panel" x-show="open" x-transition
+             @click.outside="open = false" x-cloak>
+          <div class="profile-dropdown-head">
+            <div class="profile-dropdown-name">{{ current_user.name }}</div>
+            <div class="profile-dropdown-email">{{ current_user.email }}</div>
+          </div>
+          <a class="profile-dropdown-item" href="{{ url_for('settings_views.settings') }}">
+            <span class="material-symbols-outlined">settings</span> Akun &amp; Pengaturan
+          </a>
+          <a class="profile-dropdown-item profile-dropdown-danger"
+             href="{{ url_for('auth_views.logout') }}"
+             onclick="return confirm('Yakin ingin keluar?')">
+            <span class="material-symbols-outlined">logout</span> Keluar
+          </a>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </header>
   <!-- /topbar -->
