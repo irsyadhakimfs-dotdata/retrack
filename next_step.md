@@ -176,7 +176,11 @@ Pakai aset di **`app/static/img/`** (dilayani Flask, juga di Vercel):
 
 ---
 
-## 3. TUGAS BERIKUTNYA: LANDING PAGE
+## 3. TUGAS LANDING PAGE — ✅ SELESAI (sesi 2026-06-02)
+
+> Landing page sudah dibuat & ter-commit (`app/templates/landing.html`,
+> `auth_views.index()`, `tests/test_landing.py`). Bagian 3 di bawah disimpan
+> sebagai arsip konteks. **TUGAS AKTIF BERIKUTNYA ADA DI BAGIAN 5.**
 
 ### 3.1 Tujuan & ruang lingkup
 
@@ -330,5 +334,128 @@ Jalankan `pytest tests/test_landing.py` lalu `pytest` penuh — **harus tetap
 
 ---
 
-*Disusun pada sesi 2026-06-02 (audit deployment + setup Vercel/Neon). Perbarui
-dokumen ini bila status berubah.*
+## 5. TUGAS BERIKUTNYA (AKTIF): KATEGORI CEPAT DI TRANSAKSI + PEMILIH IKON POPUP
+
+> Dua perubahan UX kategori yang diminta user (sesi **2026-06-03**). **Tanpa
+> mengubah skema DB, endpoint API, atau fitur dashboard lain.** Dua keputusan
+> desain di bawah **SUDAH dikonfirmasi user** — ikuti apa adanya, tidak perlu
+> bertanya ulang.
+
+### 5.1 Ringkasan & keputusan (final)
+
+| Fitur | Keputusan user (final) |
+|---|---|
+| **Fitur 1** — tambah kategori cepat dari dalam form Transaksi | **Ikon default otomatis.** Quick-add cukup minta **nama**; `kind` ikut tipe transaksi yang sedang dipilih; `icon` di-set otomatis ke ikon standar. Ikon bisa diganti nanti di halaman Kategori. Tujuan: akses cepat tanpa pindah halaman. |
+| **Fitur 2** — pemilihan ikon di halaman Kategori | **Popup grid ikon kurasi + kotak cari** (mengganti input teks bebas). Tetap sediakan **fallback ketik manual** untuk ikon di luar daftar. |
+
+### 5.2 Konteks kode (titik sentuh — sudah diverifikasi sesi ini)
+
+**API & data — TIDAK perlu diubah (sudah mendukung):**
+- `POST /api/categories` body `{name, kind, icon}` → `201 {ok:true, data:{id,name,kind,icon}}` (`app/api/categories.py:23`).
+- `api.js` membuka `{ok,data}` → `apiGet('/api/categories')` mengembalikan array kategori; `apiPost(...)` mengembalikan objek kategori (berisi `id`). **Verifikasi unwrap di `app/static/js/api.js`** sebelum dipakai.
+- `Category.icon` = `String(50)`, nullable (`app/models/category.py:15`). **Tanpa dedupe nama di server** → cegah duplikat di sisi klien.
+- Ikon default yang SUDAH dipakai render daftar (samakan!): income→`payments`, expense→`receipt_long` (`app/templates/categories/index.html:151`).
+
+**Frontend:**
+- `app/templates/transactions/index.html`: `<select id="tr-kategori">` (~baris 157) diisi `isiDropdownKategoriForm()` (~baris 252), difilter radio `name="tipe"`; state `semuaKategori` (~baris 186) via `muatKategori()` (~baris 228); simpan transaksi `simpanTransaksi()` (~baris 498).
+- `app/templates/categories/index.html`: input ikon teks bebas `#kat-ikon` (~baris 86–91); `simpanKategori()` (~baris 228), `editKategori()` (~baris 191), `bukaModalTambah()` (~baris 178).
+
+### 5.3 Fitur 1 — Quick-add kategori di form Transaksi
+
+**UI:** di samping `<select id="tr-kategori">`, tambah tombol-ikon **"+"** (Material
+Symbol `add`, `class="btn-icon"`, target ≥44px). Klik → buka panel kecil inline
+(di mobile jadikan bottom-sheet, konsisten pola modal→sheet di `custom.css` §18)
+berisi **1 input nama + tombol "Tambah"**. **Tanpa** pemilih ikon di sini (sesuai
+keputusan: ikon default otomatis).
+
+**Alur:**
+1. `kind` = nilai radio `name="tipe"` yang aktif (income/expense).
+2. `name` = isi input (trim; wajib, tampilkan error bila kosong).
+3. **Cegah duplikat:** cari di `semuaKategori` — bila ada `name` sama (case-insensitive) + `kind` sama, JANGAN POST; cukup pilih yang sudah ada.
+4. `icon` default = `kind === 'income' ? 'payments' : 'receipt_long'`.
+5. `POST /api/categories {name, kind, icon}` → terima objek `{id, ...}`.
+6. Update state: tambahkan ke `semuaKategori` (atau panggil ulang `muatKategori()`), jalankan `isiDropdownKategoriForm()`, lalu **set `#tr-kategori`.value = id baru** (auto-pilih). Tambahkan juga ke dropdown filter `#filter-kategori`.
+7. Tutup panel; tangani error → tampilkan di `#error-modal-transaksi`.
+
+Harus berfungsi baik di mode **tambah** maupun **edit** transaksi (modal yang sama).
+
+### 5.4 Fitur 2 — Popup pemilih ikon di halaman Kategori
+
+Ganti input teks `#kat-ikon` menjadi:
+- **Tombol pemicu** menampilkan **preview ikon terpilih** + label ("Pilih ikon").
+  Simpan nilai di `<input type="hidden" id="kat-ikon" name="icon">` —
+  **pertahankan id/name** agar `simpanKategori()` tetap jalan tanpa diubah.
+- Klik pemicu → buka **popup** (reuse pola `.modal-overlay`/`.modal` → otomatis jadi
+  bottom-sheet di mobile, atau popover Alpine). Isi popup:
+  - **Kotak cari** — filter ikon berdasarkan keyword.
+  - **Grid ikon kurasi** (Material Symbols) yang bisa diklik; ikon terpilih di-highlight
+    (mis. border / `bg-primary-light`).
+  - **Fallback** baris kecil "ketik nama ikon manual" untuk ikon di luar daftar.
+- Pilih ikon → set hidden input + preview → tutup popup.
+- `editKategori()`: set preview & hidden value dari `kat.icon`.
+- `bukaModalTambah()`: reset preview ke ikon default.
+
+**Daftar ikon kurasi (saran awal — boleh disesuaikan; semua Material Symbols
+Outlined, JANGAN emoji):**
+`restaurant, fastfood, local_cafe, lunch_dining, local_bar, shopping_cart,
+shopping_bag, storefront, checkroom, local_mall, directions_bus, directions_car,
+local_taxi, train, flight, two_wheeler, local_gas_station, receipt_long, bolt,
+water_drop, wifi, home, apartment, cleaning_services, build, medical_services,
+local_hospital, fitness_center, medication, movie, sports_esports, music_note,
+sports_soccer, travel_explore, school, menu_book, laptop_chromebook, pets,
+child_care, volunteer_activism, payments, savings, account_balance, work, paid,
+card_giftcard, attach_money, trending_up, redeem, category, label`
+
+### 5.5 File yang diubah
+
+| File | Aksi |
+|---|---|
+| `app/templates/transactions/index.html` | UBAH — tombol "+" + panel quick-add + JS (POST, dedupe, auto-select) |
+| `app/templates/categories/index.html` | UBAH — input teks ikon → tombol+popup (grid+cari+fallback); sesuaikan `simpanKategori`/`editKategori`/`bukaModalTambah` |
+| `app/static/css/custom.css` | UBAH (bila perlu) — kelas `.icon-picker*`, grid, highlight; pastikan popup→sheet di ≤768px & target sentuh ≥44px |
+| `tests/` | TAMBAH/UBAH — lihat 5.6 |
+| `app/api/categories.py`, `app/models/` | **TIDAK diubah** (API & skema sudah cukup) |
+
+### 5.6 Test (WAJIB — aturan proyek)
+
+- Pastikan test API kategori (`tests/test_api_3b.py` dkk) tetap hijau; tambah penegasan `POST /api/categories` menerima `icon` & membalas `id` bila belum tercakup.
+- (Bila ada pola test render) cek template transaksi memuat tombol quick-add, dan template kategori memuat struktur picker (hidden `#kat-ikon` + tombol pemicu).
+- `pytest` penuh **harus tetap hijau (≥127)**.
+- QA manual lebar mobile (≤768px): popup→sheet, tombol ≥44px, input ≥16px (anti auto-zoom iOS).
+
+### 5.7 Definition of Done
+
+- [ ] Dari form Transaksi bisa menambah kategori baru tanpa pindah halaman; langsung terpilih; `kind` ikut tipe transaksi; ikon default otomatis.
+- [ ] Quick-add tidak membuat duplikat (nama+tipe sama).
+- [ ] Di halaman Kategori, ikon dipilih lewat popup grid + cari (bukan ketik bebas); fallback manual ada; edit menampilkan ikon saat ini.
+- [ ] Jalan di desktop & mobile (popup→sheet, ≥44px); tanpa emoji; Material Symbols; UI Bahasa Indonesia.
+- [ ] CSS hanya di `custom.css`; reaktivitas via Alpine (bukan jQuery).
+- [ ] `pytest` penuh hijau; fitur dashboard lain tak berubah.
+
+### 5.8 Deploy setelah selesai
+
+**Tidak ada perubahan sisi Vercel yang diperlukan** untuk kedua fitur ini —
+murni frontend, jadi **tanpa** env var baru, **tanpa** ubah `vercel.json`/build,
+**tanpa** migrasi DB Neon, **tanpa** dependency baru. Ini rilis frontend biasa.
+
+1. `pytest` penuh hijau → `git commit` → `git push origin main`.
+2. **Pastikan mode deploy dulu** (jangan asumsikan auto-deploy): buka Vercel →
+   project `retrack` → **Deployments**. Apakah commit terbaru muncul otomatis
+   sebagai deployment baru?
+   - **Muncul** → Git Integration aktif; push sudah cukup, tunggu status *Ready*.
+   - **Tidak muncul** → Git Integration belum nyala. Deploy manual:
+     `vercel --prod` (install CLI dulu bila perlu: `npm i -g vercel`), atau
+     sambungkan repo di Settings → Git.
+   > Konteks: §1.1 mencatat deploy lama dilakukan **manual** (`vercel deploy`/
+   > `vercel --prod`) & production belum tentu otomatis dari `git push`.
+3. **Verifikasi** (URL ada di balik Deployment Protection → request anonim dapat
+   **401**, itu normal): login browser ke
+   `https://retrack-irsyad-hakims-projects.vercel.app` **atau** `vercel curl <path>`
+   (lihat Bagian 4 & **`vercel_done.md`**). Catatan: `retrack.vercel.app` polos =
+   milik orang lain, **bukan** app ini.
+
+---
+
+*Disusun pada sesi 2026-06-02 (audit deployment + setup Vercel/Neon).
+Diperbarui sesi **2026-06-03**: landing ditandai SELESAI; ditambah Bagian 5
+(kategori cepat + pemilih ikon popup). Perbarui dokumen ini bila status berubah.*
