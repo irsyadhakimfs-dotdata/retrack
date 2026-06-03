@@ -38,3 +38,10 @@ def test_fab_tidak_muncul_di_halaman_transaksi(client):
     _auth(client, "ver2fabtx@test.com")
     body = client.get("/transactions").data.decode("utf-8")
     assert 'class="fab"' not in body
+
+
+def test_transaksi_punya_auto_open_dari_fab(client):
+    """Halaman Transaksi memuat logika auto-open modal saat datang dari FAB (?new=1)."""
+    _auth(client, "ver2auto@test.com")
+    body = client.get("/transactions").data.decode("utf-8")
+    assert "auto-open" in body

@@ -681,7 +681,14 @@ function escHtml(str) {
 
 // ===== Event listeners =====
 document.addEventListener('DOMContentLoaded', function () {
-  inisialisasiHalaman();
+  // auto-open: bila datang dari FAB (?new=1), buka modal tambah setelah init selesai
+  inisialisasiHalaman().then(function () {
+    if (new URLSearchParams(window.location.search).get('new') === '1') {
+      bukaModalTambah();
+      // Bersihkan param agar refresh tidak membuka modal lagi
+      history.replaceState({}, '', window.location.pathname);
+    }
+  });
 
   // Filter real-time saat ketik di search
   let searchTimer;
