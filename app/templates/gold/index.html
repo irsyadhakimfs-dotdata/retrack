@@ -255,14 +255,14 @@ function renderTabel(holdings) {
 
     return `
       <tr>
-        <td>${tgl}${waktu}</td>
-        <td style="text-align:right;">${(h.grams).toLocaleString('id-ID')} gr</td>
-        <td style="text-align:right;">${fmtRp(h.buy_price_per_gram)}</td>
-        <td style="text-align:right;">${fmtRp(h.cost)}</td>
-        <td style="text-align:right;">${nilaiSekarang}</td>
-        <td style="text-align:right;">${selKenaikan}</td>
-        <td>${escHtml(h.note || '—')}</td>
-        <td style="text-align:center; white-space:nowrap;">
+        <td data-label="Tanggal Masuk">${tgl}${waktu}</td>
+        <td data-label="Gram" style="text-align:right;">${(h.grams).toLocaleString('id-ID')} gr</td>
+        <td data-label="Harga Beli/gr" style="text-align:right;">${fmtRp(h.buy_price_per_gram)}</td>
+        <td data-label="Modal" style="text-align:right;">${fmtRp(h.cost)}</td>
+        <td data-label="Nilai Sekarang" style="text-align:right;">${nilaiSekarang}</td>
+        <td data-label="Kenaikan" style="text-align:right;">${selKenaikan}</td>
+        <td data-label="Catatan">${escHtml(h.note || '—')}</td>
+        <td data-label="Aksi" style="text-align:center; white-space:nowrap;">
           <button class="btn btn-icon btn-sm" title="Edit" onclick='bukaModalEditEmas(${JSON.stringify(h)})'>
             <span class="material-symbols-outlined">edit</span>
           </button>

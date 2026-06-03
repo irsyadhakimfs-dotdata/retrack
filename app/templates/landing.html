@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReTrack — Perencana Keuangan Pribadi</title>
+  <meta name="description"
+    content="ReTrack membantu kamu mencatat transaksi, menyusun anggaran, dan mencapai target tabungan — sekaligus memantau erosi nilai rupiah akibat inflasi dan kurs." />
+
+  <!-- Google Fonts: Plus Jakarta Sans (isi) + Space Grotesk (judul/angka) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Material Symbols Outlined (ikon) -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <!-- Tailwind CSS (Play CDN) + konfigurasi palet ReTrack (identik dengan base.html) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: ['selector', '[data-theme="dark"]'],
+      corePlugins: { preflight: false },
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#6366F1', light: '#EEF0FE', dark: '#4F46E5' },
+            accent:  { DEFAULT: '#F59E0B', dark: '#D97706' },
+            bgwhite: '#FFFFFF',
+            pos:     '#10B981',
+            neg:     '#F43F5E',
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            display: ['"Space Grotesk"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: { glass: '0 8px 32px 0 rgba(15, 23, 42, 0.12)' },
+          backdropBlur: { glass: '20px' },
+        },
+      },
+    };
+  </script>
+
+  <!-- Alpine.js untuk reaktivitas (menu mobile) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+  <!-- CSS Utama (legacy) + tema Indigo/Amber (override) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ asset_v }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}?v={{ asset_v }}" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo-32.png') }}" />
+
+  <!-- Terapkan tema SEBELUM render agar tidak kedip putih -->
+  <script>
+    (function(){
+      var t = localStorage.getItem('refinance-theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    })();
+  </script>
+</head>
+<body class="font-sans antialiased" style="background: var(--bg); color: var(--text);">
+
+<!-- Lewati ke konten (aksesibilitas keyboard) -->
+<a href="#konten"
+   class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+   style="background: var(--primary-dark);">Lewati ke konten utama</a>
+
+<!-- ===================== NAVBAR (glass, sticky) ===================== -->
+<header x-data="{ open: false }" class="sticky top-0 z-50"
+        style="background: var(--glass-bg); -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur)); border-bottom: 1px solid var(--glass-border);">
+  <nav class="mx-auto flex max-w-6xl items-center justify-between px-5 py-3" aria-label="Navigasi utama">
+
+    <!-- Logo -->
+    <a href="{{ url_for('auth_views.index') }}" class="flex items-center gap-2.5">
+      <span class="block h-9 w-9 overflow-hidden rounded-xl">
+        <img class="logo-light app-logo-img" src="{{ url_for('static', filename='img/logo-light.png') }}" alt="" />
+        <img class="logo-dark app-logo-img" src="{{ url_for('static', filename='img/logo-dark.png') }}" alt="" />
+      </span>
+      <span class="font-display text-lg font-bold" style="color: var(--text);">Re<span style="color: var(--accent-dark);">Track</span></span>
+    </a>
+
+    <!-- Menu desktop -->
+    <div class="hidden items-center gap-7 md:flex">
+      <a href="#fitur" class="landing-navlink text-sm">Fitur</a>
+      <a href="#keamanan" class="landing-navlink text-sm">Keamanan</a>
+      <button class="theme-toggle inline-flex items-center gap-1.5" type="button" aria-label="Ganti mode terang/gelap">
+        <span class="material-symbols-outlined">dark_mode</span>
+        <span class="toggle-label">Gelap</span>
+      </button>
+      <a href="{{ url_for('auth_views.login') }}" class="btn btn-outline">Masuk</a>
+      <a href="{{ url_for('auth_views.register') }}" class="btn btn-primary">Daftar Gratis</a>
+    </div>
+
+    <!-- Aksi mobile: toggle tema + hamburger -->
+    <div class="flex items-center gap-2 md:hidden">
+      <button class="theme-toggle inline-flex items-center" type="button" aria-label="Ganti mode terang/gelap">
+        <span class="material-symbols-outlined">dark_mode</span>
+        <span class="toggle-label sr-only">Gelap</span>
+      </button>
+      <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-controls="menu-mobile"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-xl"
+              style="border: 1px solid var(--border); color: var(--text);" aria-label="Buka menu navigasi">
+        <span class="material-symbols-outlined" x-text="open ? 'close' : 'menu'">menu</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Panel menu mobile -->
+  <div id="menu-mobile" x-show="open" x-cloak x-transition.opacity class="border-t md:hidden"
+       style="border-color: var(--border); background: var(--card);">
+    <div class="mx-auto flex max-w-6xl flex-col gap-1 px-5 py-4">
+      <a href="#fitur" @click="open = false" class="landing-navlink rounded-lg px-2 py-2 text-sm">Fitur</a>
+      <a href="#keamanan" @click="open = false" class="landing-navlink rounded-lg px-2 py-2 text-sm">Keamanan</a>
+      <a href="{{ url_for('auth_views.login') }}" class="btn btn-outline mt-2 w-full justify-center">Masuk</a>
+      <a href="{{ url_for('auth_views.register') }}" class="btn btn-primary w-full justify-center">Daftar Gratis</a>
+    </div>
+  </div>
+</header>
+
+<main id="konten">
+
+  <!-- ===================== HERO ===================== -->
+  <section class="relative overflow-hidden">
+    <!-- Lingkaran gradien dekoratif -->
+    <span class="landing-blob" style="background: var(--grad-hero); width: 460px; height: 460px; top: -160px; right: -120px;"></span>
+    <span class="landing-blob" style="background: var(--grad-brand); width: 360px; height: 360px; bottom: -180px; left: -120px;"></span>
+
+    <div class="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 md:py-24 lg:grid-cols-2">
+
+      <!-- Kolom teks -->
+      <div>
+        <span class="pill inline-flex items-center gap-1.5 text-xs font-semibold">
+          <span class="material-symbols-outlined" style="font-size: 16px;">shield</span>
+          Perencana keuangan pribadi
+        </span>
+
+        <h1 class="font-display mt-5 text-4xl font-bold leading-tight md:text-5xl" style="color: var(--text);">
+          Kelola keuangan pribadi dengan
+          <span class="landing-gradient-text">presisi dan kendali penuh.</span>
+        </h1>
+
+        <p class="mt-5 max-w-xl text-base leading-relaxed md:text-lg" style="color: var(--text-2);">
+          ReTrack membantu kamu mencatat transaksi, menyusun anggaran, dan mencapai
+          target tabungan — sekaligus memantau bagaimana inflasi dan pergerakan kurs
+          menggerus nilai rupiahmu.
+        </p>
+
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <a href="{{ url_for('auth_views.register') }}" class="btn btn-primary justify-center">
+            <span class="material-symbols-outlined">rocket_launch</span>
+            Daftar Gratis
+          </a>
+          <a href="{{ url_for('auth_views.login') }}" class="btn btn-outline justify-center">
+            <span class="material-symbols-outlined">login</span>
+            Masuk ke Akun
+          </a>
+        </div>
+
+        <ul class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm" style="color: var(--text-2);">
+          <li class="inline-flex items-center gap-1.5">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--pos);">check_circle</span>
+            Tanpa biaya
+          </li>
+          <li class="inline-flex items-center gap-1.5">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--pos);">check_circle</span>
+            Data terenkripsi
+          </li>
+          <li class="inline-flex items-center gap-1.5">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--pos);">check_circle</span>
+            Kata sandi di-hash
+          </li>
+        </ul>
+      </div>
+
+      <!-- Kolom cuplikan dasbor (mock kartu, solid agar teks kontras) -->
+      <div class="relative">
+        <div class="rounded-2xl p-6 shadow-glass" style="background: var(--card); border: 1px solid var(--border);">
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-semibold" style="color: var(--text-2);">Ringkasan Bulan Ini</p>
+            <span class="pill inline-flex items-center gap-1 text-xs font-semibold">
+              <span class="material-symbols-outlined" style="font-size: 14px;">calendar_month</span>
+              Juni 2026
+            </span>
+          </div>
+
+          <!-- Saldo total -->
+          <div class="mt-4 rounded-xl p-5 text-white" style="background: var(--grad-saldo);">
+            <p class="text-xs font-medium opacity-90">Saldo Total</p>
+            <p class="font-display mt-1 text-3xl font-bold">Rp 12.450.000</p>
+          </div>
+
+          <!-- Pemasukan / Pengeluaran -->
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div class="rounded-xl p-4" style="background: var(--bg); border: 1px solid var(--border);">
+              <p class="inline-flex items-center gap-1 text-xs" style="color: var(--text-2);">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: var(--pos);">south_west</span>
+                Pemasukan
+              </p>
+              <p class="font-display mt-1 text-lg font-bold" style="color: var(--pos);">Rp 8.200.000</p>
+            </div>
+            <div class="rounded-xl p-4" style="background: var(--bg); border: 1px solid var(--border);">
+              <p class="inline-flex items-center gap-1 text-xs" style="color: var(--text-2);">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: var(--neg);">north_east</span>
+                Pengeluaran
+              </p>
+              <p class="font-display mt-1 text-lg font-bold" style="color: var(--neg);">Rp 3.150.000</p>
+            </div>
+          </div>
+
+          <!-- Progres anggaran -->
+          <div class="mt-4">
+            <div class="flex items-center justify-between text-xs" style="color: var(--text-2);">
+              <span>Anggaran Makan &amp; Minum</span>
+              <span class="font-semibold" style="color: var(--text);">72%</span>
+            </div>
+            <div class="mt-2 h-2.5 w-full overflow-hidden rounded-full" style="background: var(--bg);">
+              <div class="h-full rounded-full" style="width: 72%; background: var(--grad-brand);"></div>
+            </div>
+          </div>
+
+          <!-- Badge erosi nilai -->
+          <div class="mt-4 flex items-center gap-2 rounded-xl px-3 py-2.5"
+               style="background: var(--danger-bg); color: var(--neg);">
+            <span class="material-symbols-outlined" style="font-size: 18px;">trending_down</span>
+            <span class="text-xs font-semibold">Daya beli tabunganmu turun 1,8% akibat inflasi bulan ini</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== FITUR ===================== -->
+  <section id="fitur" class="py-16 md:py-24" style="background: var(--card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div class="mx-auto max-w-6xl px-5">
+      <div class="mx-auto max-w-2xl text-center">
+        <span class="pill inline-flex items-center gap-1.5 text-xs font-semibold">Fitur unggulan</span>
+        <h2 class="font-display mt-4 text-3xl font-bold md:text-4xl" style="color: var(--text);">
+          Semua yang kamu butuhkan untuk keuangan yang sehat
+        </h2>
+        <p class="mt-4 text-base" style="color: var(--text-2);">
+          Dirancang untuk perencanaan keuangan harian hingga keputusan jangka panjang.
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {% set fitur = [
+          ('account_balance_wallet', 'Transaksi & Dompet', 'Catat setiap pemasukan dan pengeluaran lintas rekening, tunai, maupun e-wallet dalam satu tempat.'),
+          ('donut_small', 'Anggaran per Kategori', 'Tetapkan batas belanja tiap kategori dan pantau realisasinya secara real-time.'),
+          ('flag', 'Target Tabungan', 'Susun savings goal yang terukur dan lacak progresnya hingga tercapai.'),
+          ('monitoring', 'Laporan & Grafik', 'Pahami tren keuanganmu lewat laporan bulanan dan visualisasi yang jelas.'),
+          ('currency_exchange', 'Kurs & Harga Emas', 'Pantau pergerakan kurs USD/IDR dan harga emas langsung dari dasbor.'),
+          ('trending_down', 'Deteksi Erosi Nilai', 'Lihat seberapa besar daya beli rupiahmu tergerus inflasi dan pergerakan kurs.')
+        ] %}
+        {% for ikon, judul, teks in fitur %}
+        <article class="rounded-2xl p-6 transition-shadow hover:shadow-glass" style="background: var(--bg); border: 1px solid var(--border);">
+          <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl"
+                style="background: var(--primary-light); color: var(--primary-dark);">
+            <span class="material-symbols-outlined">{{ ikon }}</span>
+          </span>
+          <h3 class="font-display mt-4 text-lg font-bold" style="color: var(--text);">{{ judul }}</h3>
+          <p class="mt-2 text-sm leading-relaxed" style="color: var(--text-2);">{{ teks }}</p>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== KEAMANAN ===================== -->
+  <section id="keamanan" class="py-16 md:py-24">
+    <div class="mx-auto grid max-w-6xl items-center gap-12 px-5 lg:grid-cols-2">
+      <div>
+        <span class="pill inline-flex items-center gap-1.5 text-xs font-semibold">Keamanan &amp; privasi</span>
+        <h2 class="font-display mt-4 text-3xl font-bold md:text-4xl" style="color: var(--text);">
+          Keuangan adalah hal yang personal. Kami memperlakukannya begitu.
+        </h2>
+        <p class="mt-4 text-base leading-relaxed" style="color: var(--text-2);">
+          Setiap data yang kamu catat tersimpan dengan standar keamanan yang baik,
+          dan sepenuhnya berada dalam kendalimu.
+        </p>
+      </div>
+
+      <ul class="grid gap-4">
+        {% set keamanan = [
+          ('lock', 'Koneksi terenkripsi', 'Data dikirim melalui koneksi aman dan kredensial disimpan terlindungi.'),
+          ('password', 'Kata sandi di-hash', 'Kata sandi tidak pernah disimpan dalam bentuk teks biasa.'),
+          ('verified_user', 'Kontrol penuh atas datamu', 'Datamu milikmu — kelola dan ekspor catatan keuangan kapan saja.')
+        ] %}
+        {% for ikon, judul, teks in keamanan %}
+        <li class="flex items-start gap-4 rounded-2xl p-5" style="background: var(--card); border: 1px solid var(--border);">
+          <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                style="background: var(--primary-light); color: var(--primary-dark);">
+            <span class="material-symbols-outlined">{{ ikon }}</span>
+          </span>
+          <div>
+            <h3 class="font-display text-base font-bold" style="color: var(--text);">{{ judul }}</h3>
+            <p class="mt-1 text-sm leading-relaxed" style="color: var(--text-2);">{{ teks }}</p>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== CTA PENUTUP ===================== -->
+  <section class="px-5 pb-16 md:pb-24">
+    <div class="relative mx-auto max-w-6xl overflow-hidden rounded-3xl px-6 py-14 text-center text-white md:py-20"
+         style="background: var(--grad-hero);">
+      <h2 class="font-display mx-auto max-w-2xl text-3xl font-bold md:text-4xl">
+        Mulai kelola keuanganmu hari ini
+      </h2>
+      <p class="mx-auto mt-4 max-w-xl text-base opacity-95">
+        Buat akun gratis dalam hitungan menit dan ambil kendali penuh atas keuanganmu.
+      </p>
+      <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <a href="{{ url_for('auth_views.register') }}"
+           class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold shadow-lg transition-transform hover:-translate-y-0.5"
+           style="background: #FFFFFF; color: var(--primary-dark);">
+          <span class="material-symbols-outlined">rocket_launch</span>
+          Daftar Gratis
+        </a>
+        <a href="{{ url_for('auth_views.login') }}"
+           class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-colors"
+           style="border: 1px solid rgba(255,255,255,0.6);">
+          Sudah punya akun? Masuk
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer style="background: var(--card); border-top: 1px solid var(--border);">
+  <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-8 sm:flex-row">
+    <div class="flex items-center gap-2.5">
+      <span class="block h-8 w-8 overflow-hidden rounded-lg">
+        <img class="logo-light app-logo-img" src="{{ url_for('static', filename='img/logo-light.png') }}" alt="" />
+        <img class="logo-dark app-logo-img" src="{{ url_for('static', filename='img/logo-dark.png') }}" alt="" />
+      </span>
+      <span class="font-display text-base font-bold" style="color: var(--text);">Re<span style="color: var(--accent-dark);">Track</span></span>
+    </div>
+
+    <nav class="flex items-center gap-6 text-sm" aria-label="Navigasi footer">
+      <a href="#fitur" class="landing-navlink">Fitur</a>
+      <a href="#keamanan" class="landing-navlink">Keamanan</a>
+      <a href="{{ url_for('auth_views.login') }}" class="landing-navlink">Masuk</a>
+      <a href="{{ url_for('auth_views.register') }}" class="landing-navlink">Daftar</a>
+    </nav>
+
+    <p class="text-xs" style="color: var(--text-2);">© 2026 ReTrack. Perencana keuangan pribadi.</p>
+  </div>
+</footer>
+
+<!-- JS untuk tema persisten + toggle (.theme-toggle di-bind di sini) -->
+<script src="{{ url_for('static', filename='js/main.js') }}?v={{ asset_v }}"></script>
+
+</body>
+</html>

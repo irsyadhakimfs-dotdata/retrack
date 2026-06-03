@@ -273,10 +273,10 @@ async function muatGrafikPie(days) {
               const kelasB = pct > 30 ? 'badge-neg' : pct > 15 ? 'badge-warn' : 'badge-neutral';
               return `
                 <tr>
-                  <td class="text-muted">${idx + 1}</td>
-                  <td>${escHtml(r.category_name)}</td>
-                  <td style="text-align:right;" class="fw-bold">${formatRupiah(r.total)}</td>
-                  <td style="text-align:right;">
+                  <td data-label="#" class="text-muted">${idx + 1}</td>
+                  <td data-label="Kategori">${escHtml(r.category_name)}</td>
+                  <td data-label="Total" style="text-align:right;" class="fw-bold">${formatRupiah(r.total)}</td>
+                  <td data-label="% Pengeluaran" style="text-align:right;">
                     <span class="badge ${kelasB}">${pct}%</span>
                   </td>
                 </tr>`;

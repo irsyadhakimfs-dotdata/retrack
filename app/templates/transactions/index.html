@@ -15,36 +15,62 @@
   </button>
 </div>
 
-<!-- ===== Filter & Pencarian ===== -->
-<div class="card mb-4">
+<!-- ===== Filter & Pencarian =====
+     Desktop: kontrol tampil inline. Mobile (≤768px): tombol "Filter" membuka
+     bottom sheet berisi kontrol yang SAMA (DOM tunggal, lihat custom.css 18e).
+     filterOpen dikelola Alpine; x-effect mengunci scroll body saat sheet buka. -->
+<div class="card mb-4" x-data="{ filterOpen: false }"
+     x-effect="document.body.style.overflow = filterOpen ? 'hidden' : ''">
   <div class="filter-bar">
-    <!-- Search -->
+    <!-- Search (selalu terlihat) -->
     <div class="search-wrap">
       <span class="material-symbols-outlined">search</span>
       <input class="form-control" type="text" id="search-transaksi" placeholder="Cari catatan transaksi...">
     </div>
 
-    <!-- Filter Bulan -->
-    <select class="form-control" id="filter-bulan" style="width: auto; min-width: 140px;">
-      <option value="">Semua Bulan</option>
-    </select>
-
-    <!-- Filter Kategori -->
-    <select class="form-control" id="filter-kategori" style="width: auto; min-width: 160px;">
-      <option value="">Semua Kategori</option>
-    </select>
-
-    <!-- Filter Tipe -->
-    <select class="form-control" id="filter-tipe" style="width: auto; min-width: 140px;">
-      <option value="">Semua Tipe</option>
-      <option value="income">Pemasukan</option>
-      <option value="expense">Pengeluaran</option>
-    </select>
-
-    <button class="btn btn-outline btn-sm" onclick="terapkanFilter()">
-      <span class="material-symbols-outlined">filter_list</span>
+    <!-- Pemicu sheet filter (mobile saja) -->
+    <button type="button" class="btn btn-outline filter-toggle" @click="filterOpen = true">
+      <span class="material-symbols-outlined">tune</span>
       Filter
     </button>
+
+    <!-- Latar gelap sheet (mobile) -->
+    <div class="filter-sheet-backdrop" x-show="filterOpen" x-transition.opacity
+         @click="filterOpen = false"></div>
+
+    <!-- Kontrol lanjutan: inline (desktop) / bottom sheet (mobile) -->
+    <div class="filter-advanced" :class="{ 'open': filterOpen }">
+
+      <!-- Judul + grip (mobile saja) -->
+      <div class="filter-sheet-header">
+        <span class="filter-sheet-title">Filter Transaksi</span>
+        <button type="button" class="modal-close" @click="filterOpen = false" aria-label="Tutup filter">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Filter Bulan -->
+      <select class="form-control" id="filter-bulan" style="width: auto; min-width: 140px;">
+        <option value="">Semua Bulan</option>
+      </select>
+
+      <!-- Filter Kategori -->
+      <select class="form-control" id="filter-kategori" style="width: auto; min-width: 160px;">
+        <option value="">Semua Kategori</option>
+      </select>
+
+      <!-- Filter Tipe -->
+      <select class="form-control" id="filter-tipe" style="width: auto; min-width: 140px;">
+        <option value="">Semua Tipe</option>
+        <option value="income">Pemasukan</option>
+        <option value="expense">Pengeluaran</option>
+      </select>
+
+      <button class="btn btn-outline btn-sm filter-apply" onclick="terapkanFilter()" @click="filterOpen = false">
+        <span class="material-symbols-outlined">filter_list</span>
+        Terapkan Filter
+      </button>
+    </div>
   </div>
 </div>
 
@@ -371,22 +397,22 @@ function renderBarisTransaksi(trx) {
 
   return `
     <tr>
-      <td>
+      <td data-label="Tanggal">
         <div class="fw-semibold">${tglStr}</div>
-        <div class="text-muted" style="font-size:0.75rem; display:flex; align-items:center; gap:0.2rem;">
+        <div class="text-muted" style="font-size:0.75rem; display:flex; align-items:center; gap:0.2rem; justify-content:flex-end;">
           <span class="material-symbols-outlined" style="font-size:0.85rem;">schedule</span>${waktuStr}
         </div>
       </td>
-      <td>
+      <td data-label="Deskripsi">
         <div class="fw-semibold">${escHtml(trx.note || '—')}</div>
       </td>
-      <td><span class="badge ${kelasKat}">${escHtml(namaKat)}</span></td>
-      <td>${escHtml(namaWallet)}</td>
-      <td style="text-align:right;" class="${kelasNominal} fw-bold">
+      <td data-label="Kategori"><span class="badge ${kelasKat}">${escHtml(namaKat)}</span></td>
+      <td data-label="Dompet">${escHtml(namaWallet)}</td>
+      <td data-label="Jumlah" style="text-align:right;" class="${kelasNominal} fw-bold">
         ${tanda}${formatRupiah(trx.amount)}
       </td>
-      <td>${badgeErosi}</td>
-      <td style="text-align:center;">
+      <td data-label="Erosi Nilai">${badgeErosi}</td>
+      <td data-label="Aksi" style="text-align:center;">
         <div class="list-item-actions">
           <button class="btn-icon" onclick="editTransaksi(${trx.id})" title="Edit">
             <span class="material-symbols-outlined">edit</span>

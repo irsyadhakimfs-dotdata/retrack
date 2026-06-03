@@ -1,0 +1,47 @@
+{# ===== Bottom Navigation (mobile vertical) =====
+   Di-include dari base.html. HANYA tampil di layar ≤768px (lihat .bottom-nav
+   di custom.css). Berisi 4 menu inti + tombol "Lainnya" yang membuka drawer
+   (sidebar) berisi menu lengkap lewat toggleSidebar() di main.js.
+   Highlight aktif memakai request.endpoint / request.blueprint, sama seperti
+   sidebar. "Lainnya" aktif bila halaman saat ini BUKAN salah satu menu inti. #}
+{% set _is_dash = request.endpoint == 'dashboard_views.dashboard' %}
+{% set _is_primary = _is_dash or request.blueprint in ['transaction_views', 'budget_views', 'goal_views'] %}
+<nav class="bottom-nav" aria-label="Navigasi utama">
+
+  <a class="bottom-nav-item {% if _is_dash %}active{% endif %}"
+     href="{{ url_for('dashboard_views.dashboard') }}"
+     {% if _is_dash %}aria-current="page"{% endif %}>
+    <span class="material-symbols-outlined">dashboard</span>
+    Beranda
+  </a>
+
+  <a class="bottom-nav-item {% if request.blueprint == 'transaction_views' %}active{% endif %}"
+     href="{{ url_for('transaction_views.transactions') }}"
+     {% if request.blueprint == 'transaction_views' %}aria-current="page"{% endif %}>
+    <span class="material-symbols-outlined">receipt_long</span>
+    Transaksi
+  </a>
+
+  <a class="bottom-nav-item {% if request.blueprint == 'budget_views' %}active{% endif %}"
+     href="{{ url_for('budget_views.budgets') }}"
+     {% if request.blueprint == 'budget_views' %}aria-current="page"{% endif %}>
+    <span class="material-symbols-outlined">pie_chart</span>
+    Anggaran
+  </a>
+
+  <a class="bottom-nav-item {% if request.blueprint == 'goal_views' %}active{% endif %}"
+     href="{{ url_for('goal_views.goals') }}"
+     {% if request.blueprint == 'goal_views' %}aria-current="page"{% endif %}>
+    <span class="material-symbols-outlined">savings</span>
+    Tabungan
+  </a>
+
+  <!-- Lainnya → buka drawer (sidebar) berisi menu lengkap -->
+  <button type="button"
+          class="bottom-nav-item {% if not _is_primary %}active{% endif %}"
+          onclick="toggleSidebar()" aria-label="Menu lainnya">
+    <span class="material-symbols-outlined">menu</span>
+    Lainnya
+  </button>
+
+</nav>

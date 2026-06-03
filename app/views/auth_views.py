@@ -9,10 +9,11 @@ bp = Blueprint('auth_views', __name__)
 
 @bp.route('/')
 def index():
-    """Root URL — arahkan ke dashboard jika sudah login, atau ke login."""
+    """Root URL — landing page untuk tamu, dashboard untuk yang sudah login."""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard_views.dashboard'))
-    return redirect(url_for('auth_views.login'))
+    # Tamu (belum login) melihat halaman perkenalan ReTrack
+    return render_template('landing.html')
 
 
 @bp.route('/login')

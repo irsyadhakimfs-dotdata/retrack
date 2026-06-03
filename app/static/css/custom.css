@@ -661,3 +661,382 @@ button:focus-visible,
   color: var(--primary-dark) !important;
 }
 [data-theme="dark"] .theme-toggle:hover { color: var(--primary) !important; }
+
+/* ---------------------------------------------------------
+   17. Landing page publik (standalone, TIDAK extends base.html)
+   Hanya kelas .landing-* + utilitas Alpine yang dibutuhkan
+   halaman perkenalan; sisanya memakai utility Tailwind.
+   --------------------------------------------------------- */
+
+/* Sembunyikan elemen ber-x-cloak sampai Alpine siap (cegah kedip menu) */
+[x-cloak] { display: none !important; }
+
+/* Tautan navigasi landing: redup, menyala jadi brand saat hover/fokus */
+.landing-navlink { color: var(--text-2) !important; font-weight: 500; transition: color .15s ease; }
+.landing-navlink:hover,
+.landing-navlink:focus-visible { color: var(--primary) !important; }
+
+/* Teks bergradien untuk penekanan judul hero */
+.landing-gradient-text {
+  background: linear-gradient(120deg, var(--indigo-600) 0%, var(--violet-700) 100%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+}
+[data-theme="dark"] .landing-gradient-text {
+  background: linear-gradient(120deg, var(--primary) 0%, var(--violet-500) 100%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+}
+
+/* Lingkaran gradien dekoratif di latar hero (lembut, tidak mengganggu teks) */
+.landing-blob { position: absolute; border-radius: 9999px; filter: blur(64px); opacity: .28; pointer-events: none; }
+[data-theme="dark"] .landing-blob { opacity: .22; }
+
+/* ==========================================================
+   18. MOBILE VERTICAL (≤768px) — adaptasi tampilan ponsel
+   Strategi: desktop TIDAK berubah (mobile-first enhancement).
+   Mencakup: bottom navigation, bottom sheet (modal & filter),
+   tabel → kartu bertumpuk, target sentuh ≥44px, safe-area.
+   Catatan: variabel tinggi nav dipakai ulang untuk padding konten.
+   ========================================================== */
+:root {
+  --bottomnav-h: 60px;             /* tinggi bilah navigasi bawah (tanpa safe-area) */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Tap lebih responsif (hilangkan delay 300ms) + tidak ada highlight biru norak */
+a, button, .btn, .btn-icon, .nav-item, .bottom-nav-item,
+.segmented-btn, .tab-btn, .modal-close, .theme-toggle, label[for] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(99, 102, 241, 0.12);
+}
+
+/* ---------------------------------------------------------
+   18a. Bottom Navigation — disembunyikan di desktop
+   --------------------------------------------------------- */
+.bottom-nav { display: none; }
+
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 95;                    /* di bawah modal/drawer (≥99) */
+    background:
+      linear-gradient(0deg, rgba(99,102,241,0.06) 0%, transparent 60%),
+      var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    border-top: 1px solid var(--glass-border);
+    box-shadow: 0 -6px 24px -10px rgba(15, 23, 42, 0.22);
+    /* Sisakan ruang untuk home-indicator (iOS) / gesture bar */
+    padding-bottom: var(--safe-bottom);
+  }
+
+  .bottom-nav-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: var(--bottomnav-h);
+    padding: 0.45rem 0 0.4rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--text-2);
+    font-family: var(--font-sans);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    transition: color 0.15s ease;
+  }
+  .bottom-nav-item:hover { text-decoration: none; color: var(--text); }
+  .bottom-nav-item .material-symbols-outlined {
+    font-size: 1.5rem;
+    transition: font-variation-settings 0.15s ease;
+  }
+  .bottom-nav-item.active { color: var(--primary); }
+  [data-theme="dark"] .bottom-nav-item.active { color: var(--primary); }
+  .bottom-nav-item.active .material-symbols-outlined {
+    font-variation-settings: 'FILL' 1, 'wght' 500;
+  }
+  /* Indikator bar di tepi atas item aktif */
+  .bottom-nav-item.active::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 28px; height: 3px;
+    border-radius: 0 0 4px 4px;
+    background: var(--grad-brand);
+  }
+
+  /* Konten utama: beri ruang bawah agar tidak tertutup bottom-nav */
+  .main-content {
+    padding-bottom: calc(var(--bottomnav-h) + var(--safe-bottom) + 1.25rem);
+  }
+}
+
+/* ---------------------------------------------------------
+   18b. Target sentuh & input ramah-mobile (≤768px)
+   - input ≥16px mencegah auto-zoom iOS saat fokus
+   - tombol & kontrol ≥44px (standar Apple HIG)
+   --------------------------------------------------------- */
+@media (max-width: 768px) {
+  .form-control,
+  select.form-control,
+  textarea.form-control {
+    font-size: 16px;
+    min-height: 46px;
+  }
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 40px; }
+  .btn-icon { min-width: 44px; min-height: 44px; }
+  .modal-close { min-width: 44px; min-height: 44px; }
+  .nav-item { min-height: 44px; }
+  .tab-btn { min-height: 44px; }
+  .theme-toggle { min-height: 40px; }
+
+  /* Aksi utama di header halaman → lebar penuh, mudah ditekan */
+  .page-header > .btn,
+  .page-header > .btn-primary,
+  .page-header > .btn-accent {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Sembunyikan label toggle tema di layar sangat sempit */
+}
+@media (max-width: 380px) {
+  .theme-toggle .toggle-label { display: none; }
+  .topbar-title { font-size: 1rem; }
+}
+
+/* ---------------------------------------------------------
+   18c. Modal → Bottom Sheet (≤768px)
+   Sheet meluncur dari bawah, sudut atas membulat, ada grip.
+   --------------------------------------------------------- */
+@media (max-width: 768px) {
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92vh;
+    max-height: 92dvh;
+    border-radius: 20px 20px 0 0 !important;
+    transform: translateY(100%);
+    padding-bottom: var(--safe-bottom);
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  /* Grip kecil sebagai afordans "tarik untuk tutup" */
+  .modal-header {
+    position: relative;
+    padding-top: 1.5rem;
+  }
+  .modal-header::before {
+    content: "";
+    position: absolute;
+    top: 0.55rem; left: 50%;
+    transform: translateX(-50%);
+    width: 40px; height: 4px;
+    border-radius: 9999px;
+    background: var(--border);
+  }
+  /* Tombol footer modal → tumpuk & lebar penuh agar mudah ditekan */
+  .modal-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .modal-footer .btn { width: 100%; }
+}
+
+/* ---------------------------------------------------------
+   18d. Tabel → Kartu bertumpuk (≤768px)
+   Tiap baris jadi kartu; label kolom muncul via data-label.
+   WAJIB: <td data-label="..."> di render JS tiap tabel.
+   --------------------------------------------------------- */
+@media (max-width: 768px) {
+  .table-wrap { overflow-x: visible; }
+
+  .table-wrap table,
+  .table-wrap tbody,
+  .table-wrap tr,
+  .table-wrap td { display: block; width: 100%; }
+
+  /* Header asli disembunyikan — label dipindah ke tiap sel */
+  .table-wrap thead { display: none; }
+
+  .table-wrap tr {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 0.35rem 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .table-wrap td {
+    position: relative;
+    padding: 0.55rem 0 0.55rem 42% !important;
+    min-height: 40px;
+    text-align: right !important;
+    border: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    background: transparent !important;   /* batalkan hover-bg desktop */
+    word-break: break-word;
+    font-size: 0.875rem;
+  }
+  .table-wrap tr td:last-child { border-bottom: none !important; }
+
+  .table-wrap td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0; top: 0.55rem;
+    width: 38%;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-2);
+    white-space: normal;
+  }
+
+  /* Tombol aksi di dalam kartu → rata kanan */
+  .table-wrap td .list-item-actions { justify-content: flex-end; }
+
+  /* Baris status (loading / kosong) yang memakai colspan → satu blok rapi */
+  .table-wrap td[colspan] {
+    padding: 1.25rem 0.5rem !important;
+    text-align: center !important;
+    border-bottom: none !important;
+  }
+  .table-wrap td[colspan]::before { content: none; }
+}
+
+/* ---------------------------------------------------------
+   18e. Filter bar → Bottom Sheet (≤768px) — dipakai di Transaksi
+   Desktop: kontrol tampil inline. Mobile: tombol "Filter"
+   membuka sheet berisi kontrol yang sama (DOM tunggal).
+   --------------------------------------------------------- */
+.filter-toggle { display: none; }            /* tombol pemicu — mobile saja */
+.filter-sheet-backdrop { display: none; }
+.filter-sheet-header { display: none; }       /* judul sheet — mobile saja */
+
+/* Desktop: kontrol lanjutan tampil inline seperti filter-bar biasa */
+.filter-advanced {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .filter-toggle {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
+  /* Backdrop gelap di belakang sheet */
+  .filter-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 999;
+  }
+  [data-theme="dark"] .filter-sheet-backdrop { background: rgba(2, 6, 16, 0.66); }
+
+  /* Kontrol lanjutan jadi sheet yang meluncur dari bawah */
+  .filter-advanced {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 1000;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -16px 40px -12px rgba(15, 23, 42, 0.35);
+    padding: 1.25rem 1.25rem calc(1.25rem + var(--safe-bottom));
+    transform: translateY(110%);
+    transition: transform 0.28s ease;
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+  .filter-advanced.open { transform: translateY(0); }
+
+  .filter-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    padding-top: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+  .filter-sheet-header::before {
+    content: "";
+    position: absolute;
+    top: -0.6rem; left: 50%;
+    transform: translateX(-50%);
+    width: 40px; height: 4px;
+    border-radius: 9999px;
+    background: var(--border);
+  }
+  .filter-sheet-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* Kontrol di dalam sheet → lebar penuh & nyaman */
+  .filter-advanced .form-control {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .filter-advanced .filter-apply { width: 100%; justify-content: center; }
+
+  /* Search mengisi sisa ruang; tombol "Filter" di sampingnya (satu baris) */
+  .filter-bar { gap: 0.6rem; flex-wrap: nowrap; }
+  .filter-bar .search-wrap { flex: 1 1 auto; min-width: 0; }
+}
+
+/* ---------------------------------------------------------
+   18f. Polesan tata letak mobile lain
+   --------------------------------------------------------- */
+@media (max-width: 768px) {
+  /* Cegah tarik-segarkan tak sengaja & scroll-chaining */
+  body { overscroll-behavior-y: contain; }
+
+  /* Paksa grid runtuh ke 1 kolom — termasuk yang punya grid-template-columns
+     inline (mis. dashboard "3fr 2fr"), karena inline mengalahkan media query
+     biasa; !important di stylesheet mengalahkan inline tanpa !important. */
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr !important; }
+
+  /* Segmented control (rentang grafik) → bisa di-scroll, tak terpotong */
+  .segmented { width: 100%; justify-content: space-between; }
+  .segmented-btn { flex: 1; text-align: center; }
+
+  /* Hero angka market jangan terlalu besar di layar sempit */
+  .market-hero-value { font-size: 1.85rem; }
+
+  /* Stat-strip tetap 3 kolom tapi padding lebih ringkas */
+  .stat-strip-item { padding: 0.75rem 0.5rem; }
+}
+
+/* Hormati preferensi gerak berkurang untuk sheet & nav */
+@media (prefers-reduced-motion: reduce) {
+  .modal, .filter-advanced { transition: none; }
+}
