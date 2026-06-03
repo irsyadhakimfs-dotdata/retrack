@@ -152,11 +152,36 @@
         </div>
 
         <div class="form-row">
-          <div class="form-group">
+          <!-- Kategori + tombol quick-add (panel kecil dikelola Alpine) -->
+          <div class="form-group" x-data="quickAddKategori()">
             <label class="form-label" for="tr-kategori">Kategori</label>
-            <select class="form-control" id="tr-kategori" name="category_id" required>
-              <option value="">Pilih kategori</option>
-            </select>
+            <div class="input-with-action">
+              <select class="form-control" id="tr-kategori" name="category_id" required>
+                <option value="">Pilih kategori</option>
+              </select>
+              <button type="button" class="btn-icon quick-add-btn" @click="open = !open"
+                      :aria-expanded="open" aria-label="Tambah kategori baru"
+                      title="Tambah kategori baru">
+                <span class="material-symbols-outlined">add</span>
+              </button>
+            </div>
+
+            <!-- Panel quick-add: hanya minta nama; ikon default otomatis -->
+            <div class="quick-add-panel" x-show="open" x-transition x-cloak>
+              <div class="alert alert-danger mb-2" x-show="error" x-text="error" x-cloak></div>
+              <div class="quick-add-row">
+                <input class="form-control" type="text" placeholder="Nama kategori baru"
+                       x-model="nama" @keydown.enter.prevent="simpan()"
+                       aria-label="Nama kategori baru">
+                <button type="button" class="btn btn-primary btn-sm" @click="simpan()"
+                        :disabled="loading">
+                  <span class="material-symbols-outlined">add</span> Tambah
+                </button>
+              </div>
+              <small class="text-muted" style="font-size:0.72rem;">
+                Tipe ikut transaksi; ikon default (bisa diganti di halaman Kategori).
+              </small>
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label" for="tr-dompet">Dompet</label>
@@ -266,6 +291,70 @@ function isiDropdownKategoriForm() {
 
   // Pulihkan nilai yang dipilih sebelumnya jika masih relevan
   if (nilaiLama) sel.value = nilaiLama;
+}
+
+/**
+ * Komponen Alpine untuk panel "tambah kategori cepat" di form transaksi.
+ * Cukup minta nama; kind ikut tipe transaksi aktif; ikon default otomatis.
+ * Mencegah duplikat (nama+kind sama) tanpa POST berulang.
+ */
+function quickAddKategori() {
+  return {
+    open: false,
+    nama: '',
+    error: '',
+    loading: false,
+
+    async simpan() {
+      this.error = '';
+      const nama = (this.nama || '').trim();
+      if (!nama) { this.error = 'Nama kategori wajib diisi.'; return; }
+
+      // kind ikut radio tipe transaksi yang sedang dipilih
+      const kind = document.querySelector('input[name="tipe"]:checked')?.value || 'expense';
+
+      // Cegah duplikat: bila sudah ada (nama+kind sama, case-insensitive) → pilih saja
+      const sudahAda = semuaKategori.find(
+        c => c.kind === kind && (c.name || '').toLowerCase() === nama.toLowerCase()
+      );
+      if (sudahAda) {
+        isiDropdownKategoriForm();
+        document.getElementById('tr-kategori').value = sudahAda.id;
+        this.nama = '';
+        this.open = false;
+        return;
+      }
+
+      // Ikon default sesuai tipe (samakan dengan render daftar kategori)
+      const icon = kind === 'income' ? 'payments' : 'receipt_long';
+
+      this.loading = true;
+      try {
+        const baru = await apiPost('/api/categories', { name: nama, kind: kind, icon: icon });
+
+        // Update state global + dropdown filter
+        semuaKategori.push(baru);
+        const selFilter = document.getElementById('filter-kategori');
+        if (selFilter) {
+          const opt = document.createElement('option');
+          opt.value = baru.id;
+          opt.textContent = baru.name;
+          selFilter.appendChild(opt);
+        }
+
+        // Refresh dropdown form lalu auto-pilih kategori baru
+        isiDropdownKategoriForm();
+        document.getElementById('tr-kategori').value = baru.id;
+
+        this.nama = '';
+        this.open = false;
+      } catch (err) {
+        this.error = err.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+  };
 }
 
 /**

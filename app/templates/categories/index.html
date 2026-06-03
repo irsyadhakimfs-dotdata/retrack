@@ -84,10 +84,18 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="kat-ikon">Ikon (Material Symbols)</label>
-          <input class="form-control" type="text" id="kat-ikon" name="icon"
-                 placeholder="Misal: restaurant, directions_bus...">
-          <span class="form-hint">Nama ikon dari <a href="https://fonts.google.com/icons" target="_blank">Google Material Symbols</a></span>
+          <label class="form-label">Ikon Kategori</label>
+          <!-- Nilai disimpan di hidden input (id/name dipertahankan untuk simpanKategori) -->
+          <input type="hidden" id="kat-ikon" name="icon" value="">
+          <button type="button" class="icon-picker-trigger" id="kat-ikon-trigger"
+                  onclick="bukaPemilihIkon()" aria-haspopup="dialog">
+            <span class="icon-picker-preview">
+              <span class="material-symbols-outlined" id="kat-ikon-preview">category</span>
+            </span>
+            <span class="icon-picker-text" id="kat-ikon-text">Pilih ikon</span>
+            <span class="material-symbols-outlined icon-picker-caret">expand_more</span>
+          </button>
+          <span class="form-hint">Pilih dari daftar kurasi atau ketik manual.</span>
         </div>
 
       </form>
@@ -98,6 +106,47 @@
         <span class="material-symbols-outlined">save</span>
         Simpan
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Popup Pemilih Ikon (modal terpisah; jadi bottom-sheet di mobile) ===== -->
+<div class="modal-overlay" id="modal-pilih-ikon">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Pilih Ikon</h3>
+      <button class="modal-close" onclick="closeModal('modal-pilih-ikon')" aria-label="Tutup">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- Kotak cari -->
+      <div class="search-wrap mb-3">
+        <span class="material-symbols-outlined">search</span>
+        <input class="form-control" type="text" id="cari-ikon"
+               placeholder="Cari ikon..." oninput="filterIkon()" autocomplete="off">
+      </div>
+
+      <!-- Grid ikon kurasi -->
+      <div class="icon-grid" id="grid-ikon"></div>
+      <div id="ikon-kosong" class="text-muted text-sm" style="display:none; padding:0.5rem 0;">
+        Tidak ada ikon yang cocok. Gunakan input manual di bawah.
+      </div>
+
+      <div class="divider" style="margin:1rem 0;"></div>
+
+      <!-- Fallback: ketik nama ikon manual -->
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="ikon-manual">Ketik nama ikon manual</label>
+        <div class="quick-add-row">
+          <input class="form-control" type="text" id="ikon-manual"
+                 placeholder="mis. rocket_launch" autocomplete="off"
+                 onkeydown="if(event.key==='Enter'){event.preventDefault();pakaiIkonManual();}">
+          <button type="button" class="btn btn-outline btn-sm" onclick="pakaiIkonManual()">Pakai</button>
+        </div>
+        <span class="form-hint">Untuk ikon di luar daftar
+          (<a href="https://fonts.google.com/icons" target="_blank" rel="noopener">Material Symbols</a>).</span>
+      </div>
     </div>
   </div>
 </div>
@@ -181,6 +230,7 @@ function bukaModalTambah() {
   document.getElementById('form-kategori').reset();
   document.getElementById('error-modal-kategori').style.display = 'none';
   document.getElementById('kat-tipe-expense').checked = true;
+  setPreviewIkon('');                 // reset preview ke ikon default tipe
   openModal('modal-tambah-kategori');
 }
 
@@ -197,8 +247,8 @@ async function editKategori(id) {
     document.getElementById('modal-kategori-judul').textContent = 'Edit Kategori';
     document.getElementById('kat-id').value = kat.id;
     document.getElementById('kat-nama').value = kat.name;
-    document.getElementById('kat-ikon').value = kat.icon || '';
     document.getElementById(kat.kind === 'income' ? 'kat-tipe-income' : 'kat-tipe-expense').checked = true;
+    setPreviewIkon(kat.icon || '');   // tampilkan ikon saat ini (atau default tipe)
     document.getElementById('error-modal-kategori').style.display = 'none';
     openModal('modal-tambah-kategori');
 
@@ -270,7 +320,101 @@ function escHtml(str) {
   return d.innerHTML;
 }
 
+// ===== Pemilih ikon (popup grid + cari + fallback manual) =====
+// Daftar ikon kurasi — semua Material Symbols Outlined (tanpa emoji).
+const IKON_KURASI = [
+  'restaurant','fastfood','local_cafe','lunch_dining','local_bar','shopping_cart',
+  'shopping_bag','storefront','checkroom','local_mall','directions_bus','directions_car',
+  'local_taxi','train','flight','two_wheeler','local_gas_station','receipt_long','bolt',
+  'water_drop','wifi','home','apartment','cleaning_services','build','medical_services',
+  'local_hospital','fitness_center','medication','movie','sports_esports','music_note',
+  'sports_soccer','travel_explore','school','menu_book','laptop_chromebook','pets',
+  'child_care','volunteer_activism','payments','savings','account_balance','work','paid',
+  'card_giftcard','attach_money','trending_up','redeem','category','label'
+];
+
+/**
+ * Ikon default sesuai tipe kategori yang sedang dipilih di form.
+ */
+function ikonDefaultKategori() {
+  const tipe = document.querySelector('input[name="kat-tipe"]:checked')?.value || 'expense';
+  return tipe === 'income' ? 'payments' : 'receipt_long';
+}
+
+/**
+ * Set ikon terpilih: perbarui hidden input #kat-ikon + preview tombol pemicu.
+ * @param {string} ic - nama ikon ('' = belum pilih → tampilkan default tipe)
+ */
+function setPreviewIkon(ic) {
+  const nama = (ic || '').trim();
+  // Hidden input: '' berarti server pakai ikon default saat render daftar
+  document.getElementById('kat-ikon').value = nama;
+  document.getElementById('kat-ikon-preview').textContent = nama || ikonDefaultKategori();
+  document.getElementById('kat-ikon-text').textContent = nama || 'Pilih ikon (default)';
+}
+
+/**
+ * Render grid ikon kurasi, opsional difilter keyword.
+ */
+function renderGridIkon(filter) {
+  const grid = document.getElementById('grid-ikon');
+  const kosong = document.getElementById('ikon-kosong');
+  const terpilih = document.getElementById('kat-ikon').value;
+  const f = (filter || '').trim().toLowerCase();
+  const daftar = f ? IKON_KURASI.filter(i => i.includes(f)) : IKON_KURASI;
+
+  grid.innerHTML = daftar.map(ic => `
+    <button type="button" class="icon-grid-item ${ic === terpilih ? 'active' : ''}"
+            onclick="pilihIkon('${ic}')" title="${ic}" aria-label="${ic}">
+      <span class="material-symbols-outlined">${ic}</span>
+    </button>`).join('');
+  kosong.style.display = daftar.length === 0 ? '' : 'none';
+}
+
+/**
+ * Buka popup pemilih ikon (reset kotak cari + input manual).
+ */
+function bukaPemilihIkon() {
+  document.getElementById('cari-ikon').value = '';
+  document.getElementById('ikon-manual').value = '';
+  renderGridIkon('');
+  openModal('modal-pilih-ikon');
+}
+
+/**
+ * Filter grid saat mengetik di kotak cari.
+ */
+function filterIkon() {
+  renderGridIkon(document.getElementById('cari-ikon').value);
+}
+
+/**
+ * Pilih satu ikon dari grid → set preview + tutup popup.
+ */
+function pilihIkon(ic) {
+  setPreviewIkon(ic);
+  closeModal('modal-pilih-ikon');
+}
+
+/**
+ * Pakai ikon dari input manual (fallback untuk ikon di luar daftar).
+ */
+function pakaiIkonManual() {
+  const v = document.getElementById('ikon-manual').value.trim();
+  if (!v) return;
+  setPreviewIkon(v);
+  closeModal('modal-pilih-ikon');
+}
+
 // Muat data saat DOM siap
-document.addEventListener('DOMContentLoaded', muatKategori);
+document.addEventListener('DOMContentLoaded', function () {
+  muatKategori();
+  // Saat tipe kategori berubah & belum ada ikon dipilih → segarkan preview default
+  document.querySelectorAll('input[name="kat-tipe"]').forEach(r => {
+    r.addEventListener('change', function () {
+      if (!document.getElementById('kat-ikon').value) setPreviewIkon('');
+    });
+  });
+});
 </script>
 {% endblock %}
