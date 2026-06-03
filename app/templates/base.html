@@ -145,6 +145,15 @@
   </main>
   <!-- /main-content -->
 
+  {# ===== FAB Tambah Transaksi (mobile saja; disembunyikan di halaman Transaksi) =====
+     Pintasan ke halaman Transaksi dengan ?new=1 → modal tambah terbuka otomatis. #}
+  {% if current_user.is_authenticated and request.blueprint != 'transaction_views' %}
+  <a class="fab" href="{{ url_for('transaction_views.transactions') }}?new=1"
+     aria-label="Tambah transaksi">
+    <span class="material-symbols-outlined">add</span>
+  </a>
+  {% endif %}
+
   {# ===== Bottom Navigation (mobile) — DINONAKTIFKAN ver2 =====
      Navigasi mobile kini lewat hamburger → sidebar drawer + FAB tambah-transaksi.
      Partial _bottomnav.html & CSS .bottom-nav sengaja dibiarkan agar mudah dikembalikan.

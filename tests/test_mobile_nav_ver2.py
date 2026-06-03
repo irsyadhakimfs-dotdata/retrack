@@ -23,3 +23,18 @@ def test_hamburger_tanpa_inline_onclick(client):
     body = client.get("/dashboard").data.decode("utf-8")
     assert "hamburger-btn" in body
     assert "toggleSidebar()" not in body
+
+
+def test_fab_muncul_di_halaman_non_transaksi(client):
+    """FAB tambah-transaksi muncul di dashboard, menaut ke transaksi dengan ?new=1."""
+    _auth(client, "ver2fab@test.com")
+    body = client.get("/dashboard").data.decode("utf-8")
+    assert 'class="fab"' in body
+    assert "?new=1" in body
+
+
+def test_fab_tidak_muncul_di_halaman_transaksi(client):
+    """FAB disembunyikan di halaman Transaksi (sudah ada tombol Tambah di header)."""
+    _auth(client, "ver2fabtx@test.com")
+    body = client.get("/transactions").data.decode("utf-8")
+    assert 'class="fab"' not in body
