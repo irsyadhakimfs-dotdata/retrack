@@ -334,7 +334,11 @@ Jalankan `pytest tests/test_landing.py` lalu `pytest` penuh — **harus tetap
 
 ---
 
-## 5. TUGAS BERIKUTNYA (AKTIF): KATEGORI CEPAT DI TRANSAKSI + PEMILIH IKON POPUP
+## 5. KATEGORI CEPAT DI TRANSAKSI + PEMILIH IKON POPUP — ✅ SELESAI (2026-06-03)
+
+> **STATUS: ✅ SELESAI & ter-deploy (sesi 2026-06-03).** Diimplementasi sesuai
+> spesifikasi di bawah; `pytest` 137 hijau; di `main` (commit `ab5732f`).
+> Lihat ringkasan rilis di **Bagian 7**. Spesifikasi di bawah disimpan sebagai arsip.
 
 > Dua perubahan UX kategori yang diminta user (sesi **2026-06-03**). **Tanpa
 > mengubah skema DB, endpoint API, atau fitur dashboard lain.** Dua keputusan
@@ -456,7 +460,11 @@ murni frontend, jadi **tanpa** env var baru, **tanpa** ubah `vercel.json`/build,
 
 ---
 
-## 6. TUGAS BERIKUTNYA (AKTIF): PERBAIKAN MOBILE — MENU PROFIL (AKUN + LOGOUT) DI TOPBAR
+## 6. PERBAIKAN MOBILE — MENU PROFIL (AKUN + LOGOUT) DI TOPBAR — ✅ SELESAI (2026-06-03)
+
+> **STATUS: ✅ SELESAI & ter-deploy (sesi 2026-06-03).** Menu profil avatar
+> ditambahkan di topbar (Alpine dropdown) pada semua halaman terproteksi;
+> commit `ab5732f` di `main`. Lihat **Bagian 7**. Spesifikasi di bawah = arsip.
 
 > Masalah dilaporkan user (sesi **2026-06-03**, terlihat dari Vercel di HP): di
 > **mobile TIDAK ada tombol logout maupun jalan ke halaman akun**. Keputusan
@@ -588,7 +596,36 @@ Kedua tugas **murni frontend → satu rilis**. Urutan sesuai arahan user:
 
 ---
 
+## 7. STATUS RILIS (sesi 2026-06-03) — Bagian 5 & 6 SELESAI
+
+**Terimplementasi & teruji:**
+- Fitur 1 (quick-add kategori di Transaksi), Fitur 2 (pemilih ikon popup di
+  Kategori), dan perbaikan mobile (menu profil akun+logout di topbar).
+- `pytest` penuh **137 hijau** (127 baseline + 10 test baru:
+  `tests/test_ui_kategori.py`, `tests/test_navigation.py`).
+- File diubah: `app/templates/{transactions,categories,base}/…`,
+  `app/static/css/custom.css` (§19), + 2 test baru.
+
+**Git:** 3 commit di `main` → `ab5732f` (di-push ke
+`github.com/irsyadhakimfs-dotdata/retrack`).
+
+**Deploy Vercel — TEMUAN PENTING:** **Git Integration TERNYATA AKTIF.** Push ke
+`main` **otomatis** membuat deployment (commit `ab5732f` muncul sendiri di
+Deployments). Ini **mengoreksi asumsi §1.1** yang menyebut deploy historis
+manual & "production belum tentu otomatis dari git push". Untuk rilis frontend
+berikutnya: **cukup `git push origin main`**, lalu tunggu status *Ready*
+(production, karena `main` = production branch). Verifikasi tetap via login
+browser ke `https://retrack-irsyad-hakims-projects.vercel.app` (request anonim =
+401, itu normal).
+
+> Catatan: commit ke-4 (update status doc ini) sengaja **belum di-push** saat
+> sesi ditutup agar tak memicu deploy ulang berulang saat verifikasi. Push
+> kapan pun bersama perubahan berikutnya.
+
+---
+
 *Disusun pada sesi 2026-06-02 (audit deployment + setup Vercel/Neon).
-Diperbarui sesi **2026-06-03**: landing ditandai SELESAI; ditambah Bagian 5
-(kategori cepat + pemilih ikon popup) **dan Bagian 6** (perbaikan mobile: menu
-profil akun+logout di topbar). Perbarui dokumen ini bila status berubah.*
+Diperbarui sesi **2026-06-03**: landing SELESAI; Bagian 5 (kategori cepat +
+pemilih ikon) **dan Bagian 6** (perbaikan mobile: menu profil akun+logout) kini
+**SELESAI & ter-deploy**; ditambah **Bagian 7** (status rilis + temuan Git
+Integration aktif). Perbarui dokumen ini bila status berubah.*
