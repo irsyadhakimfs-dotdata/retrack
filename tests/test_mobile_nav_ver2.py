@@ -15,3 +15,11 @@ def test_bottom_nav_dinonaktifkan(client):
     _auth(client, "ver2bn@test.com")
     body = client.get("/dashboard").data.decode("utf-8")
     assert 'class="bottom-nav"' not in body
+
+
+def test_hamburger_tanpa_inline_onclick(client):
+    """Hamburger tetap ada, tapi tanpa onclick toggleSidebar() (cegah double-fire)."""
+    _auth(client, "ver2ham@test.com")
+    body = client.get("/dashboard").data.decode("utf-8")
+    assert "hamburger-btn" in body
+    assert "toggleSidebar()" not in body
