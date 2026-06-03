@@ -456,6 +456,139 @@ murni frontend, jadi **tanpa** env var baru, **tanpa** ubah `vercel.json`/build,
 
 ---
 
+## 6. TUGAS BERIKUTNYA (AKTIF): PERBAIKAN MOBILE — MENU PROFIL (AKUN + LOGOUT) DI TOPBAR
+
+> Masalah dilaporkan user (sesi **2026-06-03**, terlihat dari Vercel di HP): di
+> **mobile TIDAK ada tombol logout maupun jalan ke halaman akun**. Keputusan
+> desain **SUDAH dikonfirmasi user**: **menu profil (avatar) di topbar** — ikuti
+> apa adanya, tidak perlu bertanya ulang. Murni frontend; tanpa ubah DB/API.
+
+### 6.1 Diagnosis (akar masalah — terverifikasi sesi ini)
+
+- Logout & profil **hanya** ada di dasar halaman Pengaturan
+  (`app/templates/settings/index.html:198–205` → `auth_views.logout` = **`GET /logout`**,
+  redirect ke `/login`). Halaman Pengaturan = "halaman akun" (profil, ganti
+  sandi, ekspor, logout).
+- Satu-satunya tautan ke Pengaturan = item di `sidebar-footer`
+  (`app/templates/partials/_sidebar.html:82–88`). Di mobile cuma terjangkau lewat
+  bottom-nav **"Lainnya"** → drawer (`_bottomnav.html:40–45` → `toggleSidebar()`).
+- `.sidebar` (`app/static/css/style.css:112`) pakai `height:100vh; overflow-y:auto`
+  **tanpa** padding safe-area. Di mobile footer "Pengaturan" jatuh **di bawah
+  viewport** (ketutup chrome browser / bottom-nav `z-index:95`) → sulit/ tak
+  terlihat.
+- `topbar-right` (`app/templates/base.html:90–96`) **hanya** berisi theme toggle —
+  tak ada menu akun/avatar.
+- **Akibat:** di mobile, logout & akun praktis tak ketemu.
+
+### 6.2 Keputusan desain (final — dikonfirmasi user)
+
+**Menu profil di topbar.** Tombol **avatar (inisial nama)** di `topbar-right`,
+**kiri** dari theme toggle, tampil di **SEMUA** halaman (termasuk mobile). Tap →
+dropdown Alpine berisi: **header nama + email**, **"Akun & Pengaturan"** →
+`/settings`, **"Keluar"** → `/logout`. Inisial **di-render server-side** via
+`current_user` (tanpa fetch tambahan).
+
+### 6.3 Konteks kode (titik sentuh — terverifikasi)
+
+- `app/templates/base.html` → `.topbar-right` (~baris 90–96): tempat menyisipkan
+  menu (sebelum `.theme-toggle`).
+- `current_user` (Flask-Login) tersedia di template. `User.name` (`String(80)`,
+  NOT NULL) & `User.email` ada (`app/models/user.py:12,14`). Inisial =
+  `current_user.name[0]|upper`.
+- Rute siap pakai: `url_for('auth_views.logout')` = `GET /logout`;
+  `url_for('settings_views.settings')` = halaman akun.
+- **Alpine.js** sudah dimuat (`base.html:47`). **CSS custom hanya** di
+  `app/static/css/custom.css`.
+- `base.html` dipakai semua halaman terproteksi (`login_required`) → `current_user`
+  pasti authenticated; tetap bungkus `{% if current_user.is_authenticated %}`
+  untuk aman.
+
+### 6.4 Implementasi
+
+**HTML** — sisipkan di `base.html` dalam `.topbar-right`, **sebelum** tombol
+`.theme-toggle`:
+
+```html
+{% if current_user.is_authenticated %}
+<div class="profile-menu" x-data="{ open: false }" @keydown.escape="open = false">
+  <button type="button" class="profile-avatar-btn" @click="open = !open"
+          :aria-expanded="open" aria-haspopup="true" aria-label="Menu akun">
+    <span class="profile-avatar">{{ current_user.name[0]|upper }}</span>
+    <span class="material-symbols-outlined profile-caret">arrow_drop_down</span>
+  </button>
+  <div class="profile-dropdown glass-panel" x-show="open" x-transition
+       @click.outside="open = false" x-cloak>
+    <div class="profile-dropdown-head">
+      <div class="profile-dropdown-name">{{ current_user.name }}</div>
+      <div class="profile-dropdown-email">{{ current_user.email }}</div>
+    </div>
+    <a class="profile-dropdown-item" href="{{ url_for('settings_views.settings') }}">
+      <span class="material-symbols-outlined">settings</span> Akun &amp; Pengaturan
+    </a>
+    <a class="profile-dropdown-item profile-dropdown-danger"
+       href="{{ url_for('auth_views.logout') }}"
+       onclick="return confirm('Yakin ingin keluar?')">
+      <span class="material-symbols-outlined">logout</span> Keluar
+    </a>
+  </div>
+</div>
+{% endif %}
+```
+
+**CSS** (`custom.css`): `.profile-menu{position:relative}`; `.profile-avatar-btn`
+(≥44px, flex, gap, bg transparan); `.profile-avatar` (lingkaran ~34px, gradient
+`var(--grad-brand)`, teks putih, tebal); `.profile-dropdown`
+(`position:absolute; right:0; top:calc(100% + 8px); min-width:208px; z-index:96`
+— di atas topbar; radius; shadow; glass-panel); `.profile-dropdown-item`
+(flex, gap, padding ≥44px, hover `--bg`); `.profile-dropdown-danger{color:var(--neg)}`;
+`.profile-dropdown-head` (nama tebal + email kecil `--text-2`). Tambah
+`[x-cloak]{display:none}` global (sekali, bila belum ada). Dark-mode aware.
+Pastikan di mobile dropdown **tidak overflow kanan** (`right:0` + `max-width`).
+
+> Logout di halaman Pengaturan **tetap dibiarkan** (tak perlu diubah).
+
+### 6.5 (Opsional) Pengerasan drawer
+
+Bila ringan & tak mengganggu desktop, sekalian cegah cut-off footer drawer:
+`.sidebar { height:100dvh }` + `.sidebar-footer { padding-bottom: calc(1rem + var(--safe-bottom)) }`.
+**Tidak wajib** — menu topbar sudah menuntaskan masalah.
+
+### 6.6 Test (WAJIB — aturan proyek)
+
+- Tambah/`perluas` test render (mis. `tests/test_navigation.py`): saat **login**,
+  halaman terproteksi (mis. `/dashboard`) memuat `class="profile-menu"`,
+  `href="/logout"`, dan tautan ke `/settings`. Pakai fixture `client` +
+  helper login (lihat `tests/test_fase5.py`).
+- `pytest` penuh **tetap hijau**.
+- QA manual mobile (≤768px): avatar terlihat tiap halaman; dropdown buka/tutup
+  (klik luar & Escape); target ≥44px; tak overflow kanan.
+
+### 6.7 Definition of Done
+
+- [ ] Avatar muncul di topbar **setiap** halaman (mobile & desktop); tap → dropdown.
+- [ ] Dropdown punya **"Akun & Pengaturan"** → `/settings` & **"Keluar"** → `/logout` (confirm).
+- [ ] Inisial server-render via `current_user`; **tanpa** fetch tambahan.
+- [ ] Tanpa emoji; Material Symbols; Alpine (bukan jQuery); CSS hanya di `custom.css`.
+- [ ] Test hijau; fitur lain tak berubah.
+
+### 6.8 Urutan kerja & deploy (gabungan Bagian 5 + 6)
+
+Kedua tugas **murni frontend → satu rilis**. Urutan sesuai arahan user:
+
+1. **Fase fitur (Bagian 5):** implementasi quick-add kategori + pemilih ikon popup
+   + test → `pytest` hijau → **commit** (mis. `feat(ui): kategori cepat di
+   transaksi + pemilih ikon popup`).
+2. **Fase mobile (Bagian 6):** implementasi menu profil topbar + test →
+   `pytest` hijau → **commit** (mis. `fix(mobile): menu profil akun+logout di
+   topbar`).
+3. **Deploy Vercel:** ikuti langkah **5.8** (push `main`; cek apakah commit
+   muncul otomatis di Deployments; bila tidak, `vercel --prod`; verifikasi via
+   login browser / `vercel curl <path>`). **Tanpa** env/migrasi/dependency baru.
+   Promosi production = **konfirmasi user** dulu.
+
+---
+
 *Disusun pada sesi 2026-06-02 (audit deployment + setup Vercel/Neon).
 Diperbarui sesi **2026-06-03**: landing ditandai SELESAI; ditambah Bagian 5
-(kategori cepat + pemilih ikon popup). Perbarui dokumen ini bila status berubah.*
+(kategori cepat + pemilih ikon popup) **dan Bagian 6** (perbaikan mobile: menu
+profil akun+logout di topbar). Perbarui dokumen ini bila status berubah.*
