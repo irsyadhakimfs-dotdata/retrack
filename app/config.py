@@ -54,6 +54,13 @@ class ProdConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = _normalize_db_url(os.getenv("DATABASE_URL"))
 
+    # Ketahanan koneksi di serverless (Vercel) + Neon Postgres.
+    # - pool_pre_ping: tes koneksi sebelum dipakai → hindari error
+    #   "server closed the connection unexpectedly" yang umum terjadi saat
+    #   instance serverless berpindah dari idle ke aktif.
+    # - pool_recycle: daur ulang koneksi sebelum Neon memutusnya karena idle.
+    SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True, "pool_recycle": 280}
+
 
 # Peta nama environment ke kelas konfigurasi
 config_by_name = {

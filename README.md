@@ -65,7 +65,14 @@ tidak persisten** — semua tulisan (login, transaksi, ETL) hilang tiap invocati
 Karena itu produksi **wajib** memakai PostgreSQL eksternal:
 
 - [Neon](https://neon.tech) (gratis), atau
-- **Vercel Postgres** (Storage tab di dashboard), atau Supabase.
+- Postgres dari **Vercel Marketplace** (Storage tab di dashboard), atau Supabase.
+
+> **Gunakan connection string _pooled_.** Di serverless, tiap invocation bisa
+> membuka koneksi baru sehingga cepat menabrak batas koneksi Postgres. Neon
+> menyediakan host ber-pooler (mengandung `-pooler`), mis.
+> `postgresql://user:pass@ep-xxx-pooler.region.aws.neon.tech/db?sslmode=require`.
+> Pakai yang `-pooler` ini untuk `DATABASE_URL`. `ProdConfig` sudah menambah
+> `pool_pre_ping` + `pool_recycle` agar koneksi idle tidak menyebabkan error.
 
 ### Langkah deploy
 
@@ -133,6 +140,7 @@ app/
   templates/ static/ # Jinja2 + CSS/JS
 api/index.py         # entrypoint Vercel (WSGI)
 vercel.json          # konfigurasi serverless + routing
+.vercelignore        # kecualikan docs/dwh/tests/csv dari bundle (cold start lebih cepat)
 requirements.txt     # runtime produksi (ramping)
 requirements-dev.txt # full stack dev (yfinance, pytest)
 migrations/          # Flask-Migrate / Alembic

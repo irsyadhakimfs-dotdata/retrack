@@ -1,0 +1,37 @@
+# Memperkecil ukuran bundle serverless Vercel & mempercepat cold start.
+# Yang DIBUTUHKAN runtime tetap ikut: api/, app/ (termasuk templates & static),
+# requirements.txt, vercel.json. Sisanya di bawah ini dikecualikan.
+
+# Dokumentasi, materi kuliah, & aset mentah (tidak dipakai runtime)
+docs/
+dwh/
+assets/
+scripts/
+
+# Catatan & log markdown (README disertakan untuk konteks)
+*.md
+!README.md
+
+# Data contoh & database lokal
+*.csv
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# Testing & dependensi khusus dev
+tests/
+.pytest_cache/
+requirements-dev.txt
+
+# Migrasi Alembic — dijalankan dari lokal, bukan di runtime Vercel
+# (AUTO_CREATE_DB membuat skema saat cold start). Aman dikecualikan.
+migrations/
+
+# Env, VCS, tooling
+.env*
+.git/
+.github/
+.claude/
+__pycache__/
+**/__pycache__/

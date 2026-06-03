@@ -1,47 +1,48 @@
-# Lingkungan virtual Python
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ===== Distribusi / packaging =====
+dist/
+build/
+*.egg-info/
+
+# ===== Virtual environment =====
 venv/
 .venv/
 env/
 
-# File .env (jangan commit secret)
+# ===== Secret / environment =====
+# Jangan commit secret. .env.example SENGAJA dikecualikan agar tetap jadi template.
 .env
+.env.*
+!.env.example
 
-# Database lokal (jangan commit data SQLite & folder instance Flask)
+# ===== Database lokal (SQLite) — tidak persisten & bukan data produksi =====
 *.db
 *.sqlite
 *.sqlite3
 instance/
 
-# Vercel
+# ===== Vercel =====
 .vercel/
 
-# Node (kalau nanti pakai tooling frontend)
-node_modules/
-
-# Bytecode Python
-__pycache__/
-*.py[cod]
-*.pyo
-
-# Distribusi / packaging
-dist/
-build/
-*.egg-info/
-
-# Pytest cache
+# ===== Testing =====
 .pytest_cache/
 .coverage
 htmlcov/
 
-# Editor
+# ===== Node (kalau nanti pakai tooling frontend) =====
+node_modules/
+
+# ===== Flask-Migrate (folder migrations/ tetap di-commit, kecuali cache) =====
+migrations/__pycache__/
+
+# ===== Editor / OS =====
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS
 .DS_Store
 Thumbs.db
-
-# Flask-Migrate (biarkan folder migrations/ ter-commit, tapi bukan __pycache__)
-migrations/__pycache__/
