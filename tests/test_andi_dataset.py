@@ -70,3 +70,21 @@ def test_saldo_tak_pernah_negatif():
     # Setiap dompet punya saldo minimum >= 0 sepanjang periode
     for name, _, _ in gen.WALLETS:
         assert mins[name] >= 0, f"Dompet {name} pernah negatif: {mins[name]}"
+
+
+def test_seed_idempoten(db):
+    import seed_test_account as seeder
+    from app.models.user import User
+    from app.models.wallet import Wallet
+    from app.models.category import Category
+
+    # Jalankan dua kali - tidak boleh menduplikasi apa pun
+    seeder.seed_test_account()
+    seeder.seed_test_account()
+
+    user = User.query.filter_by(email=gen.TEST_EMAIL).first()
+    assert user is not None
+    assert user.name == gen.TEST_NAME
+    assert user.check_password(gen.TEST_PASSWORD)
+    assert Wallet.query.filter_by(user_id=user.id).count() == 5
+    assert Category.query.filter_by(user_id=user.id).count() == 15
