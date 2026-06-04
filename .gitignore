@@ -46,3 +46,5 @@ migrations/__pycache__/
 *.swo
 .DS_Store
 Thumbs.db
+
+.vercel
