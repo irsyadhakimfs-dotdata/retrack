@@ -6,7 +6,9 @@ injectable lainnya. Deterministik (seed tetap) -> output dapat direproduksi.
 Saldo tiap dompet dijamin non-negatif by construction (lihat build_dataset).
 """
 import csv
+import os
 import random
+import sys
 from datetime import date, timedelta
 
 # --- Identitas akun test (sumber kebenaran tunggal, dipakai seeder juga) ---
@@ -206,3 +208,39 @@ def min_balances(rows):
             bal[w] -= amt
         mins[w] = min(mins[w], bal[w])
     return mins
+
+
+DEFAULT_OUT = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "injectable", "andi_karyawan_hemat_beli_bensin.csv",
+)
+
+
+def write_csv(rows, path=DEFAULT_OUT):
+    """Tulis baris ke CSV (quoting penuh, sama gaya file injectable lain)."""
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        writer.writerow(HEADER)
+        for r in rows:
+            writer.writerow([r[k] for k in HEADER])
+
+
+def main():
+    rows = build_dataset()
+    mins = min_balances(rows)
+    negatif = {k: v for k, v in mins.items() if v < 0}
+    if negatif:
+        print(f"[GAGAL] Saldo negatif terdeteksi: {negatif}. CSV tidak ditulis.")
+        return 1
+    write_csv(rows)
+    income = sum(1 for r in rows if r["Jenis"] == "Pemasukan")
+    expense = len(rows) - income
+    print(f"[SUKSES] {len(rows)} baris ditulis ke {DEFAULT_OUT}")
+    print(f"         income={income}, expense={expense}, "
+          f"rentang {rows[0]['Tanggal']}..{rows[-1]['Tanggal']}")
+    print(f"         saldo minimum per dompet: {mins}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
