@@ -187,3 +187,22 @@ def build_dataset(seed=SEED):
         d += timedelta(days=1)
 
     return rows
+
+
+def min_balances(rows):
+    """
+    Replay independen: kembalikan dict {nama_dompet: saldo_minimum} sepanjang
+    periode, dihitung ulang dari WALLET_INITIAL. Pengecekan ini terpisah dari
+    logika build_dataset agar bug greedy ketahuan.
+    """
+    bal = dict(WALLET_INITIAL)
+    mins = dict(WALLET_INITIAL)
+    for r in rows:
+        amt = int(r["Nominal (Rp)"])
+        w = r["Dompet"]
+        if r["Jenis"] == "Pemasukan":
+            bal[w] += amt
+        else:
+            bal[w] -= amt
+        mins[w] = min(mins[w], bal[w])
+    return mins

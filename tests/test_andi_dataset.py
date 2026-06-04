@@ -62,3 +62,11 @@ def test_ada_gaji_dan_thr():
     kategori = [r["Kategori"] for r in rows]
     assert kategori.count("Gaji") >= 17 * 2  # 2 baris gaji per bulan, ~17 bulan
     assert "THR/Bonus" in kategori
+
+
+def test_saldo_tak_pernah_negatif():
+    rows = gen.build_dataset()
+    mins = gen.min_balances(rows)
+    # Setiap dompet punya saldo minimum >= 0 sepanjang periode
+    for name, _, _ in gen.WALLETS:
+        assert mins[name] >= 0, f"Dompet {name} pernah negatif: {mins[name]}"
