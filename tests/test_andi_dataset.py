@@ -27,3 +27,38 @@ def test_tabel_kurs_lengkap():
     for year, mstart, mend in [(2025, 1, 12), (2026, 1, 6)]:
         for m in range(mstart, mend + 1):
             assert (year, m) in gen.USD_RATES
+
+
+def test_build_dataset_struktur():
+    rows = gen.build_dataset()
+    assert len(rows) > 400  # ~17 bulan data harian
+    nama_kat = {n for n, _ in gen.CATEGORIES}
+    nama_wal = {n for n, _, _ in gen.WALLETS}
+    for r in rows:
+        # Semua kolom header ada
+        assert set(r.keys()) == set(gen.HEADER)
+        # Jenis valid
+        assert r["Jenis"] in ("Pemasukan", "Pengeluaran")
+        # Kategori & dompet subset yang didefinisikan
+        assert r["Kategori"] in nama_kat
+        assert r["Dompet"] in nama_wal
+        # Tanggal dalam rentang
+        from datetime import date as _d
+        tgl = _d.fromisoformat(r["Tanggal"])
+        assert gen.START <= tgl <= gen.END
+        # Kurs: terisi utk income, kosong utk expense
+        if r["Jenis"] == "Pemasukan":
+            assert r["Kurs USD saat transaksi"] == gen.kurs_for(tgl)
+        else:
+            assert r["Kurs USD saat transaksi"] == ""
+
+
+def test_build_dataset_deterministik():
+    assert gen.build_dataset() == gen.build_dataset()
+
+
+def test_ada_gaji_dan_thr():
+    rows = gen.build_dataset()
+    kategori = [r["Kategori"] for r in rows]
+    assert kategori.count("Gaji") >= 17 * 2  # 2 baris gaji per bulan, ~17 bulan
+    assert "THR/Bonus" in kategori
