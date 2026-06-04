@@ -76,10 +76,17 @@ def kurs_for(d):
 
 
 def gaji_split(d):
-    """Pembagian gaji ke dompet; naik mulai September 2025."""
+    """
+    Pembagian gaji ke dompet; naik mulai September 2025.
+
+    Gaji nyaris seluruhnya masuk ke BSI (rekening bank), seperti dunia nyata.
+    Gopay hanya menerima "top-up" kecil tiap bulan yang habis dipakai belanja
+    harian (lihat strategi greedy di build_dataset) sehingga saldo e-wallet
+    bergulir di angka kecil yang realistis, bukan menumpuk jutaan.
+    """
     if (d.year, d.month) >= (2025, 9):
-        return [("BSI", 3_000_000), ("Gopay", 750_000)]
-    return [("BSI", 2_800_000), ("Gopay", 700_000)]
+        return [("BSI", 3_500_000), ("Gopay", 250_000)]
+    return [("BSI", 3_250_000), ("Gopay", 250_000)]
 
 
 def build_dataset(seed=SEED):
