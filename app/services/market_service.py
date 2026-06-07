@@ -1,5 +1,5 @@
 import time
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import requests
 
@@ -36,6 +36,18 @@ _ERAPI_LATEST = "https://open.er-api.com/v6/latest/USD"
 _FRANKFURTER_LATEST = "https://api.frankfurter.dev/v1/latest?base=USD&symbols=IDR"
 _FRANKFURTER_RANGE = "https://api.frankfurter.dev/v1/{start}..{end}?base=USD&symbols=IDR"
 _GOLD_API = "https://api.gold-api.com/price/XAU"  # harga emas USD per troy ounce
+
+# Endpoint chart Yahoo Finance (riwayat) yang diakses LANGSUNG via requests.
+# Dipakai sebagai fallback riwayat emas saat pustaka `yfinance` gagal/tidak ada
+# (mis. di serverless tanpa yfinance, atau saat library yfinance kena rate-limit).
+# Diakses dengan User-Agent browser karena Yahoo sering menolak request tanpa UA.
+_YAHOO_CHART = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+_YF_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    )
+}
 
 
 def _cache_valid(key):
@@ -345,12 +357,74 @@ def get_gold_per_gram():
     }
 
 
+def _fetch_gold_history_http(months):
+    """
+    Riwayat harga emas via HTTP gratis tanpa API key — fallback saat pustaka
+    yfinance gagal/tidak terpasang (mis. serverless/Vercel) atau kena rate-limit.
+
+    Harga emas (GC=F, USD per troy ounce) diambil LANGSUNG dari endpoint chart
+    Yahoo Finance memakai requests + User-Agent browser; cara ini sering lolos
+    walau pustaka `yfinance` kena "Too Many Requests". Kurs USD/IDR per tanggal
+    diambil dari get_usd_idr_history() (yang punya fallback frankfurter.dev sendiri),
+    lalu: idr_per_gram = usd_per_oz * kurs / 31,1035.
+
+    Kembalikan list [{"date": "YYYY-MM-DD", "price_idr": int}, ...] urut naik, atau [].
+    """
+    try:
+        end = datetime.now(timezone.utc)
+        start = end - timedelta(days=months * 31)
+        params = {
+            "period1": int(start.timestamp()),
+            "period2": int(end.timestamp()),
+            "interval": "1d",
+        }
+        r = requests.get(
+            _YAHOO_CHART.format(symbol="GC=F"),
+            params=params,
+            headers=_YF_HEADERS,
+            timeout=_HTTP_TIMEOUT + 5,
+        )
+        result = r.json().get("chart", {}).get("result")
+        if not result:
+            return []
+        timestamps = result[0].get("timestamp") or []
+        closes = (
+            result[0].get("indicators", {}).get("quote", [{}])[0].get("close") or []
+        )
+
+        # Peta tanggal → kurs USD/IDR untuk konversi per hari.
+        # Tanpa kurs sama sekali → tidak bisa konversi ke Rupiah.
+        fx_map = {d["date"]: d["rate"] for d in get_usd_idr_history(months=months)}
+        if not fx_map:
+            return []
+
+        result_list = []
+        kurs_terakhir = None  # carry-forward bila tanggal emas tak punya kurs (hari libur kurs)
+        for ts, harga_oz in zip(timestamps, closes):
+            if harga_oz is None:
+                continue
+            tgl = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d")
+            kurs = fx_map.get(tgl) or kurs_terakhir
+            if kurs:
+                kurs_terakhir = kurs
+            else:
+                continue  # belum ada kurs sama sekali → lewati titik ini
+            idr_per_gram = float(harga_oz) * kurs / GRAM_PER_OUNCE
+            result_list.append({"date": tgl, "price_idr": round(idr_per_gram)})
+
+        result_list.sort(key=lambda x: x["date"])
+        return result_list
+    except Exception:
+        return []
+
+
 def get_gold_history(months=6):
     """
     Riwayat harga emas dalam Rupiah per gram selama N bulan.
 
     Mengambil harga emas (GC=F, USD/oz) dan kurs USD/IDR (IDR=X) dari yfinance,
     lalu menyelaraskan per tanggal: idr_per_gram = usd_per_oz * kurs / 31,1035.
+    Bila yfinance gagal/tidak ada → fallback HTTP gratis (_fetch_gold_history_http).
     Kembalikan list [{"date": "YYYY-MM-DD", "price_idr": int}, ...] urut tanggal naik.
     """
     key = f"gold_history_{months}"
@@ -386,7 +460,16 @@ def get_gold_history(months=6):
         return result
 
     except Exception:
-        # Fallback: cache lama bila ada, jika tidak list kosong
+        # Fallback 1: HTTP gratis (Yahoo chart GC=F + kurs frankfurter). Penting di
+        # serverless tanpa yfinance & saat pustaka yfinance kena rate-limit —
+        # tanpa ini grafik emas tidak pernah muncul (data kosong).
+        if _http_fallback_enabled():
+            result = _fetch_gold_history_http(months)
+            if result:
+                _cache[key] = {"data": result, "ts": time.time()}
+                return result
+
+        # Fallback 2: cache lama bila ada, jika tidak list kosong
         if key in _cache:
             return _cache[key]["data"]
         return []

@@ -1,5 +1,7 @@
 """Test fitur investasi emas — CRUD kepemilikan, ringkasan kenaikan, riwayat harga."""
-from unittest.mock import patch
+import calendar
+from datetime import date
+from unittest.mock import MagicMock, patch
 
 
 def _auth(client, email, password="pass", name="U"):
@@ -118,3 +120,78 @@ class TestGoldHistory:
         body = resp.get_json()
         assert body["ok"] is True
         assert body["data"] == dummy
+
+
+class TestGoldHistoryFallback:
+    """Saat yfinance gagal/tidak ada (serverless / rate-limit), riwayat emas WAJIB
+    tetap terisi lewat fallback HTTP — bukan list kosong yang membuat grafik hilang."""
+
+    def _ts(self, iso):
+        """Unix timestamp (UTC, tengah malam) dari tanggal 'YYYY-MM-DD'."""
+        return calendar.timegm(date.fromisoformat(iso).timetuple())
+
+    def test_get_gold_history_pakai_fallback_http_saat_yfinance_gagal(self):
+        """yfinance tidak tersedia → get_gold_history tetap mengembalikan data via HTTP."""
+        from app.services import market_service as ms
+        ms.reset_cache()
+
+        # Payload tiruan endpoint chart Yahoo (GC=F, USD/oz) untuk 2 hari
+        fake_resp = MagicMock()
+        fake_resp.json.return_value = {
+            "chart": {"result": [{
+                "timestamp": [self._ts("2026-01-01"), self._ts("2026-01-02")],
+                "indicators": {"quote": [{"close": [2000.0, 2010.0]}]},
+            }]}
+        }
+        fake_fx = [
+            {"date": "2026-01-01", "rate": 16000.0},
+            {"date": "2026-01-02", "rate": 16100.0},
+        ]
+
+        with patch("app.services.market_service.yf", None), \
+             patch("app.services.market_service._http_fallback_enabled", return_value=True), \
+             patch("app.services.market_service.get_usd_idr_history", return_value=fake_fx), \
+             patch("app.services.market_service.requests.get", return_value=fake_resp):
+            hist = ms.get_gold_history(months=1)
+
+        ms.reset_cache()
+        assert len(hist) == 2, "fallback HTTP harus mengisi data, bukan list kosong"
+        assert hist[0]["date"] == "2026-01-01"
+        # 2000 USD/oz × 16000 / 31,1035 ≈ harga per gram
+        assert hist[0]["price_idr"] == round(2000.0 * 16000.0 / ms.GRAM_PER_OUNCE)
+        assert hist[1]["price_idr"] == round(2010.0 * 16100.0 / ms.GRAM_PER_OUNCE)
+
+    def test_fallback_carry_forward_kurs_saat_tanggal_emas_tanpa_kurs(self):
+        """Tanggal emas tanpa kurs harian → pakai kurs terakhir (carry-forward), tidak di-skip."""
+        from app.services import market_service as ms
+        ms.reset_cache()
+
+        fake_resp = MagicMock()
+        fake_resp.json.return_value = {
+            "chart": {"result": [{
+                "timestamp": [self._ts("2026-01-01"), self._ts("2026-01-02")],
+                "indicators": {"quote": [{"close": [2000.0, 2010.0]}]},
+            }]}
+        }
+        # Kurs hanya tersedia untuk 2026-01-01
+        fake_fx = [{"date": "2026-01-01", "rate": 16000.0}]
+
+        with patch("app.services.market_service.yf", None), \
+             patch("app.services.market_service._http_fallback_enabled", return_value=True), \
+             patch("app.services.market_service.get_usd_idr_history", return_value=fake_fx), \
+             patch("app.services.market_service.requests.get", return_value=fake_resp):
+            hist = ms.get_gold_history(months=1)
+
+        ms.reset_cache()
+        assert len(hist) == 2
+        # Hari kedua memakai kurs carry-forward 16000
+        assert hist[1]["price_idr"] == round(2010.0 * 16000.0 / ms.GRAM_PER_OUNCE)
+
+    def test_fallback_dimatikan_saat_http_disabled(self):
+        """Bila MARKET_HTTP_FALLBACK off & tak ada cache → kembalikan [] (tanpa jaringan)."""
+        from app.services import market_service as ms
+        ms.reset_cache()
+        with patch("app.services.market_service.yf", None), \
+             patch("app.services.market_service._http_fallback_enabled", return_value=False):
+            hist = ms.get_gold_history(months=1)
+        assert hist == []
